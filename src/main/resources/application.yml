@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: medibook-backend
+
+  profiles:
+    active: dev
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# NEW SECTION ADDED
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-this-to-a-long-random-secret-string-in-prod-min-256-bits}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
+
+# Application-level constants used across modules
+medibook:
+  jwt:
+    secret: ${JWT_SECRET:change-this-dev-only-secret-key-replace-in-prod-min-256-bits}
+    expiration-ms: 86400000        # 24h access token
+    refresh-expiration-ms: 604800000  # 7d refresh token
+
+  cors:
+    allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
+
+logging:
+  level:
+    com.medibook: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
