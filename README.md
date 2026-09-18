@@ -41,7 +41,7 @@ The project is built in phases, backend before frontend, with each phase complet
 | 0 | Project setup (skeleton, config, health check) | ✅ Complete |
 | 1 | Auth & Roles (JWT, register/login, role-based access) | ✅ Complete |
 | 2 | Clinic & User Profiles (clinic CRUD, staff assignment) | ✅ Complete |
-| 3 | Doctor Search | 🔜 Planned |
+| 3 | Doctor Search |  ✅ Complete |
 | 4 | Slot Management & Locking | 🔜 Planned |
 | 5 | Appointment Booking | 🔜 Planned |
 | 6 | Calendar Views | 🔜 Planned |
