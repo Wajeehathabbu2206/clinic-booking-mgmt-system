@@ -13,10 +13,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
-/**
- * Shared base for every entity across modules.
- * Provides a surrogate primary key and created/updated audit timestamps.
- */
 @Getter
 @Setter
 @MappedSuperclass

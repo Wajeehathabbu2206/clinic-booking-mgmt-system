@@ -68,4 +68,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleUnauthorized(UnauthorizedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(ex.getMessage()));
     }
+    
+    @ExceptionHandler(SlotNotAvailableException.class)
+    public ResponseEntity<ApiResponse<Object>> handleSlotNotAvailable(SlotNotAvailableException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT) 
+                .body(ApiResponse.error(ex.getMessage()));
+    }
 }
