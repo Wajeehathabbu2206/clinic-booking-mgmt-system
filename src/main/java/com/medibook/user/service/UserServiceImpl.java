@@ -3,12 +3,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.medibook.common.exception.ResourceNotFoundException;
+import com.medibook.common.exception.UnauthorizedException;
 import com.medibook.common.util.Role;
 import com.medibook.user.dto.UserProfileResponse;
 import com.medibook.user.dto.UserProfileUpdateRequest;
 import com.medibook.user.entity.User;
 import com.medibook.user.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,6 +39,22 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         return userRepository.save(user);
+    }
+    
+    private User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+    }
+
+    // 🔹 Helper method 2: entity → DTO
+    private UserProfileResponse toResponse(User user) {
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole())
+                .build();
     }
 
     // 🔹 Interface methods
@@ -83,5 +101,18 @@ public class UserServiceImpl implements UserService {
                 .phoneNumber(user.getPhoneNumber())
                 .role(user.getRole())
                 .build();
+    }
+    
+    @Override
+    @Transactional
+    public UserProfileResponse updateUserRole(Long userId, Role newRole) {
+        User user = findUser(userId);
+
+        if (user.getRole() == Role.SUPER_ADMIN && newRole != Role.SUPER_ADMIN) {
+            throw new UnauthorizedException("Cannot change role of a SUPER_ADMIN account");
+        }
+
+        user.setRole(newRole);
+        return toResponse(userRepository.save(user));
     }
 }

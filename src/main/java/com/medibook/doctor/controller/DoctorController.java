@@ -22,14 +22,14 @@ public class DoctorController {
     private final DoctorService doctorService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CLINIC_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
     public ApiResponse<DoctorResponse> createDoctor(@Valid @RequestBody DoctorCreateRequest request) {
         return ApiResponse.success("Doctor profile created successfully",
                 doctorService.createDoctorProfile(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CLINIC_ADMIN', 'DOCTOR')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN', 'DOCTOR')")
     public ApiResponse<DoctorResponse> updateDoctor(
             @PathVariable Long id,
             @Valid @RequestBody DoctorUpdateRequest request
@@ -71,7 +71,7 @@ public class DoctorController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CLINIC_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deactivateDoctor(@PathVariable Long id) {
         doctorService.deactivateDoctor(id);

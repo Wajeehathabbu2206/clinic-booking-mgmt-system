@@ -9,6 +9,7 @@ public interface UserService {
     UserProfileResponse getProfile(Long userId);
     UserProfileResponse updateProfile(Long userId, UserProfileUpdateRequest request);
     UserProfileResponse getUserById(Long userId);
+    UserProfileResponse updateUserRole(Long userId, Role newRole);
     
     User createUser(String fullName, String email, String password,
             String phoneNumber, Role role);

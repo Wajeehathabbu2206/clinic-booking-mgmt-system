@@ -1,6 +1,7 @@
 package com.medibook.user.controller;
 
 import com.medibook.common.response.ApiResponse;
+import com.medibook.user.dto.RoleUpdateRequest;
 import com.medibook.user.dto.UserProfileResponse;
 import com.medibook.user.dto.UserProfileUpdateRequest;
 import com.medibook.user.service.UserService;
@@ -39,5 +40,14 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserProfileResponse>> getUserById(@PathVariable Long id) {
         UserProfileResponse response = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.success("User fetched successfully", response));
+    }
+    
+    @PatchMapping("/{id}/role")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> updateUserRole(
+            @PathVariable Long id,
+            @Valid @RequestBody RoleUpdateRequest request) {
+        UserProfileResponse response = userService.updateUserRole(id, request.getRole());
+        return ResponseEntity.ok(ApiResponse.success("User role updated successfully", response));
     }
 }
