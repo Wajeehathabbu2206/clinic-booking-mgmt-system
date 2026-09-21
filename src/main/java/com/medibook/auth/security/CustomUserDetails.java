@@ -10,6 +10,10 @@ import java.util.List;
 public class CustomUserDetails implements UserDetails {
 
     private final User user;
+    
+    public String getRole() {
+        return user.getRole().name();
+    }
 
     public CustomUserDetails(User user) {
         this.user = user;

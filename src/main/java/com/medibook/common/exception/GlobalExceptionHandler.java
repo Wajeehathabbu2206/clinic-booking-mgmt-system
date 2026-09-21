@@ -75,4 +75,16 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT) 
                 .body(ApiResponse.error(ex.getMessage()));
     }
+    
+    @ExceptionHandler(AppointmentNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAppointmentNotFound(AppointmentNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidAppointmentStateException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidAppointmentState(InvalidAppointmentStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
 }

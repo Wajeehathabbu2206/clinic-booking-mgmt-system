@@ -21,7 +21,7 @@ public class SlotController {
     private final SlotService slotService;
 
     @PostMapping("/generate")
-    @PreAuthorize("hasAnyRole('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
     public ApiResponse<List<SlotResponse>> generateSlots(@Valid @RequestBody GenerateSlotsRequest request) {
         List<SlotResponse> slots = slotService.generateSlots(request);
         return ApiResponse.success("Slots generated successfully", slots);
@@ -37,7 +37,7 @@ public class SlotController {
     }
 
     @GetMapping("/doctor/{doctorId}")
-    @PreAuthorize("hasAnyRole('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN','RECEPTIONIST')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN','RECEPTIONIST')")
     public ApiResponse<List<SlotResponse>> getAllSlots(
             @PathVariable Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
@@ -52,13 +52,13 @@ public class SlotController {
     }
 
     @PatchMapping("/{id}/block")
-    @PreAuthorize("hasAnyRole('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
     public ApiResponse<SlotResponse> blockSlot(@PathVariable Long id) {
         return ApiResponse.success("Slot blocked", slotService.blockSlot(id));
     }
 
     @PatchMapping("/{id}/unblock")
-    @PreAuthorize("hasAnyRole('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
     public ApiResponse<SlotResponse> unblockSlot(@PathVariable Long id) {
         return ApiResponse.success("Slot unblocked", slotService.unblockSlot(id));
     }
