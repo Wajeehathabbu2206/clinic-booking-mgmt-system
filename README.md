@@ -45,7 +45,7 @@ The project is built in phases, backend before frontend, with each phase complet
 | 4 | Slot Management & Locking |  ✅ Completed |
 | 5 | Appointment Booking | ✅ Completed |
 | 6 | Calendar Views | ✅ Completed |
-| 7 | Notifications | 🔜 Planned |
+| 7 | Notifications | 🔜 Ongoing |
 | 8 | Medical Records | 🔜 Planned |
 | 9 | Reviews & Ratings | 🔜 Planned |
 | 10 | Analytics Dashboard | 🔜 Planned |
@@ -63,11 +63,11 @@ The project is built in phases, backend before frontend, with each phase complet
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/<your-username>/medibook.git
+   git clone https://github.com/Wajeehathabbu2206/clinic-booking-mgmt-system.git
    cd medibook
    ```
 
-2. Create a MySQL database for the project and update the connection details in `application-dev.yml` / `application-product.yml` (or via environment variables — see below).
+2. Create a MySQL database for the project and update the connection details in `application-dev.yml` / `application-prod.yml` (or via environment variables).
 
 3. Set the required environment variables before running the app. The initial SUPER_ADMIN account is seeded on startup from these values, so they must **never** be hardcoded in the committed config files:
 
@@ -82,11 +82,11 @@ The project is built in phases, backend before frontend, with each phase complet
 
    Example (`.env`, not committed):
    ```
-   ADMIN_EMAIL=admin@medibook.com
-   ADMIN_PASSWORD=change_this_before_running
-   ADMIN_FULL_NAME=System Administrator
+   ADMIN_EMAIL=admin2026@medibook.com
+   ADMIN_PASSWORD=randompassword
+   ADMIN_FULL_NAME=Admin Name
    DB_URL=jdbc:mysql://localhost:3306/medibook
-   DB_USERNAME=root
+   DB_USERNAME=your_username
    DB_PASSWORD=your_db_password
    ```
 
@@ -112,4 +112,4 @@ A full Postman collection (endpoint, method, headers, and sample request bodies)
 
 ## Project Status
 
-Currently on **Phase 2 (Clinic & User Profiles)** — complete. Development continues phase by phase; see the roadmap above for what's next.
+Currently on **Phase 7 (Notification stage)** — complete. Development continues phase by phase; see the roadmap above for what's next.
