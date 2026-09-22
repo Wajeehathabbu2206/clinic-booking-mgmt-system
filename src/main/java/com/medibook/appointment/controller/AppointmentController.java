@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,5 +82,15 @@ public class AppointmentController {
         AppointmentResponse response =
                 appointmentService.rescheduleAppointment(id, principal.getId(), principal.getRole(), request);
         return ResponseEntity.ok(ApiResponse.success("Appointment rescheduled", response));
+    }
+    
+    @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasAuthority('DOCTOR')")
+    public ResponseEntity<ApiResponse<AppointmentResponse>> completeAppointment(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Long doctorUserId = ((CustomUserDetails) authentication.getPrincipal()).getId();
+        AppointmentResponse response = appointmentService.completeAppointment(id, doctorUserId);
+        return ResponseEntity.ok(ApiResponse.success("Appointment marked as completed", response));
     }
 }

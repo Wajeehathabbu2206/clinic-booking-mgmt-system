@@ -87,4 +87,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponse.error(ex.getMessage()));
     }
+    
+    @ExceptionHandler(HolidayConflictException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHolidayConflict(HolidayConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
 }

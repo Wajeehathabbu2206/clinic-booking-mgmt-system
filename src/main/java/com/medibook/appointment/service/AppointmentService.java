@@ -170,4 +170,22 @@ public class AppointmentService {
             throw new UnauthorizedException("You are not authorized to modify this appointment");
         }
     }
+    
+    @Transactional
+    public AppointmentResponse completeAppointment(Long appointmentId, Long doctorUserId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found with id: " + appointmentId));
+
+        if (!appointment.getDoctor().getUser().getId().equals(doctorUserId)) {
+            throw new UnauthorizedException("You can only complete your own appointments");
+        }
+
+        if (appointment.getStatus() != AppointmentStatus.BOOKED) {
+            throw new InvalidAppointmentStateException("Only BOOKED appointments can be marked as completed");
+        }
+
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        appointment = appointmentRepository.save(appointment);
+        return  AppointmentResponse.fromEntity(appointment);
+    }
 }

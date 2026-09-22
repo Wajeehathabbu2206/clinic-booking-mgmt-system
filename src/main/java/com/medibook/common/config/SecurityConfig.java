@@ -63,6 +63,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/doctors/{id}").hasAnyAuthority("SUPER_ADMIN", "CLINIC_ADMIN", "DOCTOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/doctors/{id}").hasAnyAuthority("SUPER_ADMIN", "CLINIC_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/slots/doctor/*/available").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/calendar/doctor/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/calendar/doctor/*/holidays").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
