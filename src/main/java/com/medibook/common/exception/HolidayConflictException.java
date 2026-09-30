@@ -1,7 +1,9 @@
 package com.medibook.common.exception;
 
-public class HolidayConflictException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class HolidayConflictException extends MedibookException {
     public HolidayConflictException(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT);
     }
 }

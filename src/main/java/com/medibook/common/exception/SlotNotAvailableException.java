@@ -1,7 +1,9 @@
 package com.medibook.common.exception;
 
-public class SlotNotAvailableException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class SlotNotAvailableException extends MedibookException {
     public SlotNotAvailableException(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT);
     }
 }

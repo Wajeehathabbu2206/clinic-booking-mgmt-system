@@ -1,7 +1,9 @@
 package com.medibook.common.exception;
 
-public class InvalidAppointmentStateException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class InvalidAppointmentStateException extends MedibookException {
     public InvalidAppointmentStateException(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT);
     }
 }

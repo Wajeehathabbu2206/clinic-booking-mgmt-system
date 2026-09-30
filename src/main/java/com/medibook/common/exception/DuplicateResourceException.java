@@ -1,7 +1,9 @@
 package com.medibook.common.exception;
 
-public class DuplicateResourceException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class DuplicateResourceException extends MedibookException {
     public DuplicateResourceException(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT);
     }
 }
