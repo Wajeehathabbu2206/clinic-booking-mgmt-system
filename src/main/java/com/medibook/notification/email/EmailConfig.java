@@ -19,6 +19,10 @@ public class EmailConfig {
             }
             return new BrevoEmailSender(props);
         }
-        return new ConsoleEmailSender();
+        if ("console".equalsIgnoreCase(props.getProvider())) {
+            return new ConsoleEmailSender();
+        }
+        throw new IllegalStateException("Unsupported EMAIL_PROVIDER: " + props.getProvider()
+                + ". Supported values are 'brevo' and 'console'.");
     }
 }

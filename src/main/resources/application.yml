@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: medibook-backend
 
@@ -22,14 +24,14 @@ app:
     secret: ${JWT_SECRET:change-this-to-a-long-random-secret-string-in-prod-min-256-bits}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
 
-email:
-#  provider: ${EMAIL_PROVIDER:console}
-  api-key: ${BREVO_API_KEY}
-  sender-email: ${EMAIL_SENDER_ADDRESS}
-  sender-name: ${EMAIL_SENDER_NAME:Medibook}
-
 # Application-level constants used across modules
 medibook:
+  email:
+    provider: ${EMAIL_PROVIDER:brevo}
+    api-key: ${BREVO_API_KEY:}
+    sender-email: ${EMAIL_SENDER_ADDRESS:}
+    sender-name: ${EMAIL_SENDER_NAME:MediBook}
+    base-url: ${BREVO_BASE_URL:https://api.brevo.com}
   jwt:
     secret: ${JWT_SECRET:change-this-dev-only-secret-key-replace-in-prod-min-256-bits}
     expiration-ms: 86400000        # 24h access token

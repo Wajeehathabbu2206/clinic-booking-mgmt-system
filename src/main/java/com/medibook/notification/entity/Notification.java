@@ -29,6 +29,18 @@ public class Notification extends BaseEntity {
     @Column(name = "related_appointment_id")
     private Long relatedAppointmentId;
 
-    @Column(name="`read`", nullable = false)
+    @Column(name = "is_read", nullable = false)
     private boolean read = false;
+
+    // Older databases may still have the original `read` column after the
+    // field was renamed to `is_read`. Keep it populated until that legacy
+    // column is removed by a database migration.
+    @Column(name = "`read`", nullable = false)
+    private boolean legacyRead;
+
+    @PrePersist
+    @PreUpdate
+    private void syncLegacyReadColumn() {
+        legacyRead = read;
+    }
 }

@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class EmailProperties {
 
     /** "brevo" or "console" */
-    private String provider = "console";
+    private String provider = "brevo";
     private String apiKey;
     private String senderEmail;
     private String senderName = "MediBook";
