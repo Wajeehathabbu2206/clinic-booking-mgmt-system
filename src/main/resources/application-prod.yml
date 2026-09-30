@@ -19,8 +19,3 @@ logging:
   level:
     com.medibook: INFO
     org.hibernate.SQL: WARN		
-medibook:
-  admin:
-    email: admin@medibook.in
-    password: Admin@12345
-    full-name: System Administrator

@@ -15,13 +15,12 @@ spring:
 server:
   port: 8080
   error:
-    include-message: always
-    include-binding-errors: always
+    include-message: never
+    include-binding-errors: never
 
-# NEW SECTION ADDED
 app:
   jwt:
-    secret: ${JWT_SECRET:change-this-to-a-long-random-secret-string-in-prod-min-256-bits}
+    secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
 
 # Application-level constants used across modules
@@ -32,22 +31,17 @@ medibook:
     sender-email: ${EMAIL_SENDER_ADDRESS:}
     sender-name: ${EMAIL_SENDER_NAME:MediBook}
     base-url: ${BREVO_BASE_URL:https://api.brevo.com}
-  jwt:
-    secret: ${JWT_SECRET:change-this-dev-only-secret-key-replace-in-prod-min-256-bits}
-    expiration-ms: 86400000        # 24h access token
-    refresh-expiration-ms: 604800000  # 7d refresh token
-
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
   admin:
-      email: admin@medibook.in
-      password: Admin@12345
-      full-name: System Administrator
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+    full-name: ${ADMIN_FULL_NAME:System Administrator}
 
 logging:
   level:
-    com.medibook: DEBUG
+    com.medibook: INFO
     org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG  
+    org.hibernate.SQL: WARN
 
   
