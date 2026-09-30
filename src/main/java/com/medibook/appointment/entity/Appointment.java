@@ -29,10 +29,11 @@ public class Appointment extends BaseEntity {
     @JoinColumn(name = "clinic_id", nullable = false)
     private Clinic clinic;
 
-    // OneToOne + unique gives a DB-level guarantee (in addition to the
-    // pessimistic lock) that a slot can never back two live appointments.
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "slot_id", nullable = false, unique = true)
+    // A slot can be reused after an appointment is cancelled, so history may
+    // contain multiple appointments for one slot. Slot status/locking enforces
+    // that only one appointment is active at a time.
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "slot_id", nullable = false)
     private Slot slot;
 
     @Column(name = "reason_for_visit", nullable = false, length = 500)

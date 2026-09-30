@@ -22,6 +22,12 @@ app:
     secret: ${JWT_SECRET:change-this-to-a-long-random-secret-string-in-prod-min-256-bits}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
 
+email:
+#  provider: ${EMAIL_PROVIDER:console}
+  api-key: ${BREVO_API_KEY}
+  sender-email: ${EMAIL_SENDER_ADDRESS}
+  sender-name: ${EMAIL_SENDER_NAME:Medibook}
+
 # Application-level constants used across modules
 medibook:
   jwt:
@@ -31,9 +37,15 @@ medibook:
 
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
+  admin:
+      email: admin@medibook.in
+      password: Admin@12345
+      full-name: System Administrator
 
 logging:
   level:
     com.medibook: DEBUG
     org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: DEBUG  
+
+  

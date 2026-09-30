@@ -29,7 +29,9 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        // The security configuration and @PreAuthorize expressions use
+        // hasAuthority with the plain enum names.
+        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
     @Override

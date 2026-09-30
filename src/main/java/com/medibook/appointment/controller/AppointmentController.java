@@ -53,14 +53,18 @@ public class AppointmentController {
 
     @GetMapping("/doctor/{doctorId}")
     @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> doctorAppointments(@PathVariable Long doctorId) {
-        return ResponseEntity.ok(ApiResponse.success(appointmentService.getDoctorAppointments(doctorId)));
+    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> doctorAppointments(
+            @PathVariable Long doctorId, @AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(ApiResponse.success(
+                appointmentService.getDoctorAppointments(doctorId, principal.getId(), principal.getRole())));
     }
 
     @GetMapping("/clinic/{clinicId}")
     @PreAuthorize("hasAnyAuthority('CLINIC_ADMIN','SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> clinicAppointments(@PathVariable Long clinicId) {
-        return ResponseEntity.ok(ApiResponse.success(appointmentService.getClinicAppointments(clinicId)));
+    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> clinicAppointments(
+            @PathVariable Long clinicId, @AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(ApiResponse.success(
+                appointmentService.getClinicAppointments(clinicId, principal.getId(), principal.getRole())));
     }
 
     @PatchMapping("/{id}/cancel")

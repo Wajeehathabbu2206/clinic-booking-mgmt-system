@@ -3,6 +3,7 @@ package com.medibook.slot.service;
 import com.medibook.clinic.entity.Clinic;
 import com.medibook.common.exception.ResourceNotFoundException;
 import com.medibook.common.exception.SlotNotAvailableException;
+import com.medibook.common.exception.BadRequestException;
 import com.medibook.doctor.entity.Doctor;
 import com.medibook.doctor.repository.DoctorRepository;
 import com.medibook.slot.dto.GenerateSlotsRequest;
@@ -32,11 +33,11 @@ public class SlotService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Doctor not found with id: " + request.getDoctorId()));
 
-        if (!request.getToDate().isAfter(request.getFromDate().minusDays(1))) {
-            throw new IllegalArgumentException("To date must be on or after from date");
+        if (request.getToDate().isBefore(request.getFromDate())) {
+            throw new BadRequestException("To date must be on or after from date");
         }
         if (!request.getDailyEndTime().isAfter(request.getDailyStartTime())) {
-            throw new IllegalArgumentException("Daily end time must be after daily start time");
+            throw new BadRequestException("Daily end time must be after daily start time");
         }
 
         // Build a set of existing (date, startTime) keys to avoid duplicate-generation
@@ -85,6 +86,7 @@ public class SlotService {
 
     @Transactional(readOnly = true)
     public List<SlotResponse> getAvailableSlots(Long doctorId, LocalDate fromDate, LocalDate toDate) {
+        validateDateRange(fromDate, toDate);
         return slotRepository
                 .findByDoctor_IdAndSlotDateBetweenAndStatusOrderBySlotDateAscStartTimeAsc(
                         doctorId, fromDate, toDate, SlotStatus.AVAILABLE)
@@ -95,6 +97,7 @@ public class SlotService {
 
     @Transactional(readOnly = true)
     public List<SlotResponse> getAllSlots(Long doctorId, LocalDate fromDate, LocalDate toDate) {
+        validateDateRange(fromDate, toDate);
         return slotRepository
                 .findByDoctor_IdAndSlotDateBetweenOrderBySlotDateAscStartTimeAsc(doctorId, fromDate, toDate)
                 .stream()
@@ -127,6 +130,9 @@ public class SlotService {
     public void release(Long slotId) {
         Slot slot = slotRepository.findByIdForUpdate(slotId)
                 .orElseThrow(() -> new ResourceNotFoundException("Slot not found with id: " + slotId));
+        if (slot.getStatus() != SlotStatus.BOOKED) {
+            throw new SlotNotAvailableException("Only a booked slot can be released");
+        }
         slot.setStatus(SlotStatus.AVAILABLE);
         slotRepository.save(slot);
     }
@@ -147,7 +153,7 @@ public class SlotService {
         Slot slot = slotRepository.findByIdForUpdate(slotId)
                 .orElseThrow(() -> new ResourceNotFoundException("Slot not found with id: " + slotId));
         if (slot.getStatus() != SlotStatus.BLOCKED) {
-            throw new IllegalStateException("Slot is not currently blocked");
+            throw new SlotNotAvailableException("Slot is not currently blocked");
         }
         slot.setStatus(SlotStatus.AVAILABLE);
         return mapToResponse(slotRepository.save(slot));
@@ -173,5 +179,11 @@ public class SlotService {
                 .endTime(slot.getEndTime())
                 .status(slot.getStatus())
                 .build();
+    }
+
+    private void validateDateRange(LocalDate fromDate, LocalDate toDate) {
+        if (fromDate == null || toDate == null || toDate.isBefore(fromDate)) {
+            throw new BadRequestException("A valid date range is required");
+        }
     }
 }
