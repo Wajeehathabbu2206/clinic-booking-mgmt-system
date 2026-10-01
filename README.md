@@ -28,6 +28,7 @@ notification | review | analytics
 ```
 
 **Frontend feature folders**
+
 Separate modules for admin, doctors, clinics, and patients
 ```
 auth | clinic | doctor | patient | appointment
