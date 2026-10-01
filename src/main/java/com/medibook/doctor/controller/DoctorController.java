@@ -2,6 +2,8 @@ package com.medibook.doctor.controller;
 
 import com.medibook.common.response.ApiResponse;
 import com.medibook.common.dto.PagedResponse;
+import com.medibook.auth.security.CustomUserDetails;
+import com.medibook.common.util.Role;
 import com.medibook.doctor.dto.DoctorCreateRequest;
 import com.medibook.doctor.dto.DoctorResponse;
 import com.medibook.doctor.dto.DoctorUpdateRequest;
@@ -10,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -23,19 +26,22 @@ public class DoctorController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
-    public ApiResponse<DoctorResponse> createDoctor(@Valid @RequestBody DoctorCreateRequest request) {
+        public ApiResponse<DoctorResponse> createDoctor(
+                        @AuthenticationPrincipal CustomUserDetails principal,
+                        @Valid @RequestBody DoctorCreateRequest request) {
         return ApiResponse.success("Doctor profile created successfully",
-                doctorService.createDoctorProfile(request));
+                                doctorService.createDoctorProfile(request, principal.getId(), Role.valueOf(principal.getRole())));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN', 'DOCTOR')")
     public ApiResponse<DoctorResponse> updateDoctor(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable Long id,
             @Valid @RequestBody DoctorUpdateRequest request
     ) {
         return ApiResponse.success("Doctor profile updated successfully",
-                doctorService.updateDoctorProfile(id, request));
+                doctorService.updateDoctorProfile(id, request, principal.getId(), Role.valueOf(principal.getRole())));
     }
 
     @GetMapping("/{id}")
@@ -73,7 +79,7 @@ public class DoctorController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deactivateDoctor(@PathVariable Long id) {
-        doctorService.deactivateDoctor(id);
+        public void deactivateDoctor(@AuthenticationPrincipal CustomUserDetails principal, @PathVariable Long id) {
+                doctorService.deactivateDoctor(id, principal.getId(), Role.valueOf(principal.getRole()));
     }
 }

@@ -53,7 +53,16 @@ public class UserServiceImpl implements UserService {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
+            .profilePictureUrl(user.getProfilePictureUrl())
+            .gender(user.getGender())
+            .dateOfBirth(user.getDateOfBirth())
+            .addressLine1(user.getAddressLine1())
+            .city(user.getCity())
+            .state(user.getState())
+            .pincode(user.getPincode())
                 .role(user.getRole())
+            .enabled(user.isEnabled())
+            .createdAt(user.getCreatedAt())
                 .build();
     }
 
@@ -69,8 +78,15 @@ public class UserServiceImpl implements UserService {
     public UserProfileResponse updateProfile(Long userId, UserProfileUpdateRequest request) {
         User user = getById(userId);
 
-        user.setFullName(request.getFullName());
-        user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getFullName() != null) user.setFullName(request.getFullName());
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getProfilePictureUrl() != null) user.setProfilePictureUrl(request.getProfilePictureUrl());
+        if (request.getGender() != null) user.setGender(request.getGender());
+        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        if (request.getAddressLine1() != null) user.setAddressLine1(request.getAddressLine1());
+        if (request.getCity() != null) user.setCity(request.getCity());
+        if (request.getState() != null) user.setState(request.getState());
+        if (request.getPincode() != null) user.setPincode(request.getPincode());
 
         userRepository.save(user);
         return mapToResponse(user);
@@ -99,7 +115,16 @@ public class UserServiceImpl implements UserService {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
+                .profilePictureUrl(user.getProfilePictureUrl())
+                .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
+                .addressLine1(user.getAddressLine1())
+                .city(user.getCity())
+                .state(user.getState())
+                .pincode(user.getPincode())
                 .role(user.getRole())
+                .enabled(user.isEnabled())
+                .createdAt(user.getCreatedAt())
                 .build();
     }
     

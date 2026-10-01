@@ -8,8 +8,10 @@ import com.medibook.calendar.entity.DoctorHoliday;
 import com.medibook.common.exception.HolidayConflictException;
 import com.medibook.calendar.repository.DoctorHolidayRepository;
 import com.medibook.common.exception.ResourceNotFoundException;
+import com.medibook.common.util.Role;
 import com.medibook.doctor.entity.Doctor;
 import com.medibook.doctor.repository.DoctorRepository;
+import com.medibook.clinic.service.ClinicAccessService;
 import com.medibook.slot.entity.Slot;
 import com.medibook.slot.repository.SlotRepository;
 import org.springframework.stereotype.Service;
@@ -33,26 +35,31 @@ public class CalendarService {
     private final DoctorRepository doctorRepository;
     private final SlotRepository slotRepository;
     private final AppointmentRepository appointmentRepository;
+    private final ClinicAccessService clinicAccessService;
 
     public CalendarService(DoctorHolidayRepository holidayRepository,
                             DoctorRepository doctorRepository,
                             SlotRepository slotRepository,
-                            AppointmentRepository appointmentRepository) {
+                            AppointmentRepository appointmentRepository,
+                            ClinicAccessService clinicAccessService) {
         this.holidayRepository = holidayRepository;
         this.doctorRepository = doctorRepository;
         this.slotRepository = slotRepository;
         this.appointmentRepository = appointmentRepository;
+        this.clinicAccessService = clinicAccessService;
     }
 
     @Transactional(readOnly = true)
     public CalendarResponse getDoctorCalendar(Long doctorId, LocalDate fromDate, LocalDate toDate,
-                                               boolean includePatientDetails) {
+                                               Long requesterId, Role requesterRole) {
         if (fromDate.isAfter(toDate)) {
             throw new IllegalArgumentException("fromDate must not be after toDate");
         }
 
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
+        boolean includePatientDetails = requesterId != null && requesterRole != null
+            && clinicAccessService.canViewCalendarPatientDetails(doctor, requesterId, requesterRole);
 
         List<Slot> slots = slotRepository.findByDoctor_IdAndSlotDateBetweenOrderBySlotDateAscStartTimeAsc(doctorId, fromDate, toDate);
         List<DoctorHoliday> holidays = holidayRepository.findByDoctorIdAndHolidayDateBetween(doctorId, fromDate, toDate);
@@ -124,9 +131,10 @@ public class CalendarService {
     }
 
     @Transactional
-    public HolidayResponse addHoliday(Long doctorId, HolidayRequest request) {
+    public HolidayResponse addHoliday(Long doctorId, HolidayRequest request, Long requesterId, Role requesterRole) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
+        clinicAccessService.assertCanManageDoctor(doctor, requesterId, requesterRole);
 
         if (holidayRepository.existsByDoctorIdAndHolidayDate(doctorId, request.getHolidayDate())) {
             throw new HolidayConflictException("Holiday already marked for this doctor on " + request.getHolidayDate());
@@ -150,9 +158,10 @@ public class CalendarService {
     }
 
     @Transactional
-    public void removeHoliday(Long holidayId) {
+    public void removeHoliday(Long holidayId, Long requesterId, Role requesterRole) {
         DoctorHoliday holiday = holidayRepository.findById(holidayId)
                 .orElseThrow(() -> new ResourceNotFoundException("Holiday not found with id: " + holidayId));
+        clinicAccessService.assertCanManageDoctor(holiday.getDoctor(), requesterId, requesterRole);
         holidayRepository.delete(holiday);
     }
 

@@ -2,6 +2,7 @@ package com.medibook.doctor.service;
 
 import com.medibook.clinic.entity.Clinic;
 import com.medibook.clinic.repository.ClinicRepository;
+import com.medibook.clinic.service.ClinicAccessService;
 import com.medibook.common.dto.PagedResponse;
 import com.medibook.common.exception.DuplicateResourceException;
 import com.medibook.common.exception.ResourceNotFoundException;
@@ -31,9 +32,10 @@ public class DoctorService {
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
     private final ClinicRepository clinicRepository;
+        private final ClinicAccessService clinicAccessService;
 
     @Transactional
-    public DoctorResponse createDoctorProfile(DoctorCreateRequest request) {
+        public DoctorResponse createDoctorProfile(DoctorCreateRequest request, Long requesterId, Role requesterRole) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
 
@@ -47,6 +49,7 @@ public class DoctorService {
 
         Clinic clinic = clinicRepository.findById(request.getClinicId())
                 .orElseThrow(() -> new ResourceNotFoundException("Clinic not found with id: " + request.getClinicId()));
+        clinicAccessService.assertCanManageClinic(clinic, requesterId, requesterRole);
 
         Doctor doctor = Doctor.builder()
                 .user(user)
@@ -65,9 +68,11 @@ public class DoctorService {
     }
 
     @Transactional
-    public DoctorResponse updateDoctorProfile(Long doctorId, DoctorUpdateRequest request) {
+        public DoctorResponse updateDoctorProfile(Long doctorId, DoctorUpdateRequest request,
+                                                                                          Long requesterId, Role requesterRole) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
+                clinicAccessService.assertCanManageDoctor(doctor, requesterId, requesterRole);
 
         if (request.getSpecialization() != null) doctor.setSpecialization(request.getSpecialization());
         if (request.getQualification() != null) doctor.setQualification(request.getQualification());
@@ -144,9 +149,10 @@ public class DoctorService {
     }
 
     @Transactional
-    public void deactivateDoctor(Long id) {
-        Doctor doctor = doctorRepository.findById(id)
+        public void deactivateDoctor(Long id, Long requesterId, Role requesterRole) {
+                Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
+                clinicAccessService.assertCanManageDoctor(doctor, requesterId, requesterRole);
         doctor.setIsActive(false);
         doctorRepository.save(doctor);
     }

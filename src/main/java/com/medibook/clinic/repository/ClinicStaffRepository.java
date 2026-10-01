@@ -2,6 +2,7 @@ package com.medibook.clinic.repository;
 
 import com.medibook.clinic.entity.ClinicStaff;
 import com.medibook.clinic.entity.StaffStatus;
+import com.medibook.common.util.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,4 +13,6 @@ public interface ClinicStaffRepository extends JpaRepository<ClinicStaff, Long> 
     List<ClinicStaff> findByClinicIdAndStatus(Long clinicId, StaffStatus status);
     List<ClinicStaff> findByUserIdAndStatus(Long userId, StaffStatus status);
     boolean existsByClinicIdAndUserIdAndStatus(Long clinicId, Long userId, StaffStatus status);
+    boolean existsByClinicIdAndUserIdAndStatusAndRoleInClinic(
+            Long clinicId, Long userId, StaffStatus status, Role roleInClinic);
 }

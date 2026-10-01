@@ -5,7 +5,7 @@ MediBook is a multi-clinic appointment booking and patient records platform buil
 ## Tech Stack
 
 **Backend**
-- Java, Spring Boot (modular monolith — separate packages per module, single build)
+- Java 17+, Spring Boot 4.1.1 (modular monolith — separate packages per module, single build)
 - Maven
 - MySQL
 - Spring Security + JWT-based authentication
@@ -34,7 +34,7 @@ calendar | medical-record | notification | review
 
 ## Build Roadmap
 
-The project is built in phases, backend before frontend, with each phase completed and tested before moving to the next.
+The project is built in phases, backend before frontend. Feature implementation and test coverage are tracked separately below.
 
 | Phase | Description | Status |
 |-------|-------------|--------|
@@ -49,7 +49,7 @@ The project is built in phases, backend before frontend, with each phase complet
 | 8 | Medical Records | ✅ Completed |
 | 9 | Reviews & Ratings | ✅ Completed |
 | 10 | Analytics Dashboard | ✅ Completed |
-| 11 | Polish & Testing | 🔜 Planned |
+| 11 | Polish & Testing | 🔄 In progress |
 
 ## Getting Started
 
@@ -64,7 +64,7 @@ The project is built in phases, backend before frontend, with each phase complet
 1. Clone the repository
    ```bash
    git clone https://github.com/Wajeehathabbu2206/clinic-booking-mgmt-system.git
-   cd medibook
+   cd clinic-booking-mgmt-system
    ```
 
 2. Create a MySQL database for the project and update the connection details in `application-dev.yml` / `application-prod.yml` (or via environment variables).
@@ -79,15 +79,24 @@ The project is built in phases, backend before frontend, with each phase complet
    | `DB_URL` | MySQL JDBC connection URL |
    | `DB_USERNAME` | MySQL username |
    | `DB_PASSWORD` | MySQL password |
+   | `JWT_SECRET` | JWT signing secret (at least 32 bytes for HS256) |
+   | `FRONTEND_ORIGIN` | Allowed browser origin (defaults to `http://localhost:5173`) |
+   | `EMAIL_PROVIDER` | `brevo` (default) or `console` for local development |
+   | `BREVO_API_KEY` | Required when using the Brevo email provider |
+   | `EMAIL_SENDER_ADDRESS` | Verified sender address required by Brevo |
+   | `EMAIL_SENDER_NAME` | Optional display name for outgoing email |
 
    Example (`.env`, not committed):
    ```
-   ADMIN_EMAIL=admin2026@medibook.com
+   ADMIN_EMAIL=admin@medibook.com
    ADMIN_PASSWORD=randompassword
    ADMIN_FULL_NAME=Admin Name
+   JWT_SECRET=replace-with-a-random-secret-of-at-least-32-bytes
    DB_URL=jdbc:mysql://localhost:3306/medibook
    DB_USERNAME=your_username
    DB_PASSWORD=your_db_password
+   EMAIL_PROVIDER=console
+   FRONTEND_ORIGIN=http://localhost:5173
    ```
 
 4. Run the application:
@@ -104,12 +113,12 @@ The project is built in phases, backend before frontend, with each phase complet
 
 - New users registering via `/api/auth/register` default to the `PATIENT` role.
 - A `SUPER_ADMIN` promotes a user to `CLINIC_ADMIN` via `PATCH /api/users/{id}/role`.
-- Promoted users must log in again to receive a JWT with updated role claims.
+- Authorization uses the user's current database role, so role changes take effect on the next authenticated request.
 
 ### API Testing
 
-A full Postman collection (endpoint, method, headers, and sample request bodies) is maintained alongside each phase's delivery. See `/docs/postman` *(update this path once added to the repo)*.
+No Postman collection is currently checked in. Automated coverage is limited; add API-level and database-backed integration tests before treating the backend as production-ready.
 
 ## Project Status
 
-Currently on **Phase 7 (Notification stage)** — complete. Development continues phase by phase; see the roadmap above for what's next.
+Backend feature phases 0–10 are implemented. Phase 11 is in progress; remaining hardening work includes versioned database migrations, broader API/integration test coverage, and maintained API request documentation.

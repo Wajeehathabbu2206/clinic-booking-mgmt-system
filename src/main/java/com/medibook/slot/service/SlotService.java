@@ -1,9 +1,11 @@
 package com.medibook.slot.service;
 
 import com.medibook.clinic.entity.Clinic;
+import com.medibook.clinic.service.ClinicAccessService;
 import com.medibook.common.exception.ResourceNotFoundException;
 import com.medibook.common.exception.SlotNotAvailableException;
 import com.medibook.common.exception.BadRequestException;
+import com.medibook.common.util.Role;
 import com.medibook.doctor.entity.Doctor;
 import com.medibook.doctor.repository.DoctorRepository;
 import com.medibook.slot.dto.GenerateSlotsRequest;
@@ -26,12 +28,14 @@ public class SlotService {
 
     private final SlotRepository slotRepository;
     private final DoctorRepository doctorRepository;
+    private final ClinicAccessService clinicAccessService;
 
     @Transactional
-    public List<SlotResponse> generateSlots(GenerateSlotsRequest request) {
+    public List<SlotResponse> generateSlots(GenerateSlotsRequest request, Long requesterId, Role requesterRole) {
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Doctor not found with id: " + request.getDoctorId()));
+        clinicAccessService.assertCanManageDoctor(doctor, requesterId, requesterRole);
 
         if (request.getToDate().isBefore(request.getFromDate())) {
             throw new BadRequestException("To date must be on or after from date");
@@ -96,8 +100,12 @@ public class SlotService {
     }
 
     @Transactional(readOnly = true)
-    public List<SlotResponse> getAllSlots(Long doctorId, LocalDate fromDate, LocalDate toDate) {
+    public List<SlotResponse> getAllSlots(Long doctorId, LocalDate fromDate, LocalDate toDate,
+                                          Long requesterId, Role requesterRole) {
         validateDateRange(fromDate, toDate);
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
+        clinicAccessService.assertCanViewDoctorSchedule(doctor, requesterId, requesterRole);
         return slotRepository
                 .findByDoctor_IdAndSlotDateBetweenOrderBySlotDateAscStartTimeAsc(doctorId, fromDate, toDate)
                 .stream()
@@ -138,9 +146,10 @@ public class SlotService {
     }
 
     @Transactional
-    public SlotResponse blockSlot(Long slotId) {
+    public SlotResponse blockSlot(Long slotId, Long requesterId, Role requesterRole) {
         Slot slot = slotRepository.findByIdForUpdate(slotId)
                 .orElseThrow(() -> new ResourceNotFoundException("Slot not found with id: " + slotId));
+        clinicAccessService.assertCanManageDoctor(slot.getDoctor(), requesterId, requesterRole);
         if (slot.getStatus() == SlotStatus.BOOKED) {
             throw new SlotNotAvailableException("Cannot block a slot that is already booked");
         }
@@ -149,9 +158,10 @@ public class SlotService {
     }
 
     @Transactional
-    public SlotResponse unblockSlot(Long slotId) {
+    public SlotResponse unblockSlot(Long slotId, Long requesterId, Role requesterRole) {
         Slot slot = slotRepository.findByIdForUpdate(slotId)
                 .orElseThrow(() -> new ResourceNotFoundException("Slot not found with id: " + slotId));
+        clinicAccessService.assertCanManageDoctor(slot.getDoctor(), requesterId, requesterRole);
         if (slot.getStatus() != SlotStatus.BLOCKED) {
             throw new SlotNotAvailableException("Slot is not currently blocked");
         }

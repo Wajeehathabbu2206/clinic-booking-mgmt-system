@@ -4,6 +4,7 @@ import com.medibook.auth.dto.AuthResponse;
 import com.medibook.auth.dto.LoginRequest;
 import com.medibook.auth.dto.RegisterRequest;
 import com.medibook.auth.security.JwtUtil;
+import com.medibook.common.util.Role;
 import com.medibook.user.entity.User;
 import com.medibook.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class AuthService {
                 request.getEmail(),
                 request.getPassword(),
                 request.getPhoneNumber(),
-                request.getRole()
+                Role.PATIENT
         );
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());

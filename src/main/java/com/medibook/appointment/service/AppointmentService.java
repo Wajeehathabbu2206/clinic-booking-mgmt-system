@@ -11,15 +11,16 @@ import com.medibook.common.exception.AppointmentNotFoundException;
 import com.medibook.common.exception.ResourceNotFoundException;
 import com.medibook.common.exception.InvalidAppointmentStateException;
 import com.medibook.common.exception.UnauthorizedException;
-import com.medibook.common.exception.ForbiddenException;
 import com.medibook.doctor.repository.DoctorRepository;
 import com.medibook.clinic.repository.ClinicRepository;
+import com.medibook.clinic.service.ClinicAccessService;
 import com.medibook.doctor.entity.Doctor;
 import com.medibook.notification.service.NotificationService;
 import com.medibook.slot.entity.Slot;
 import com.medibook.slot.service.SlotService;
 import com.medibook.user.entity.User;
 import com.medibook.user.repository.UserRepository;
+import com.medibook.common.util.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ public class AppointmentService {
     private final NotificationService notificationService;
     private final DoctorRepository doctorRepository;
     private final ClinicRepository clinicRepository;
+    private final ClinicAccessService clinicAccessService;
 
     /**
      * Books an appointment for the given patient. Delegates slot locking to
@@ -83,19 +85,9 @@ public class AppointmentService {
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getDoctorAppointments(Long doctorId, Long requesterId, String requesterRole) {
-        if ("DOCTOR".equals(requesterRole)) {
-            Doctor doctor = doctorRepository.findById(doctorId)
-                    .orElseThrow(() -> new AppointmentNotFoundException("Doctor not found with id: " + doctorId));
-            if (!doctor.getUser().getId().equals(requesterId)) {
-                throw new ForbiddenException("You can only view your own appointments");
-            }
-        } else if ("CLINIC_ADMIN".equals(requesterRole)) {
-            Doctor doctor = doctorRepository.findById(doctorId)
-                    .orElseThrow(() -> new AppointmentNotFoundException("Doctor not found with id: " + doctorId));
-            if (!doctor.getClinic().getCreatedBy().getId().equals(requesterId)) {
-                throw new ForbiddenException("You can only view appointments for your clinic");
-            }
-        }
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new AppointmentNotFoundException("Doctor not found with id: " + doctorId));
+        clinicAccessService.assertCanManageDoctor(doctor, requesterId, Role.valueOf(requesterRole));
         return appointmentRepository.findByDoctorIdOrderByCreatedAtDesc(doctorId).stream()
                 .map(AppointmentResponse::fromEntity)
                 .collect(Collectors.toList());
@@ -106,9 +98,7 @@ public class AppointmentService {
         if ("CLINIC_ADMIN".equals(requesterRole)) {
             Clinic clinic = clinicRepository.findById(clinicId)
                     .orElseThrow(() -> new AppointmentNotFoundException("Clinic not found with id: " + clinicId));
-            if (!clinic.getCreatedBy().getId().equals(requesterId)) {
-                throw new ForbiddenException("You can only view appointments for your clinic");
-            }
+            clinicAccessService.assertCanManageClinic(clinic, requesterId, Role.valueOf(requesterRole));
         }
         return appointmentRepository.findByClinicIdOrderByCreatedAtDesc(clinicId).stream()
                 .map(AppointmentResponse::fromEntity)
@@ -193,7 +183,8 @@ public class AppointmentService {
         boolean isPrivileged = "SUPER_ADMIN".equals(requesterRole)
                 || ("DOCTOR".equals(requesterRole) && appointment.getDoctor().getUser().getId().equals(requesterId))
                 || ("CLINIC_ADMIN".equals(requesterRole)
-                    && appointment.getClinic().getCreatedBy().getId().equals(requesterId));
+                && clinicAccessService.isClinicAdmin(
+                    appointment.getClinic(), requesterId, Role.valueOf(requesterRole)));
         if (!isOwner && !isPrivileged) {
             throw new UnauthorizedException("You are not authorized to view this appointment");
         }
@@ -203,7 +194,8 @@ public class AppointmentService {
         boolean isOwner = appointment.getPatient().getId().equals(requesterId);
         boolean isPrivileged = "SUPER_ADMIN".equals(requesterRole)
                 || ("CLINIC_ADMIN".equals(requesterRole)
-                    && appointment.getClinic().getCreatedBy().getId().equals(requesterId));
+                && clinicAccessService.isClinicAdmin(
+                    appointment.getClinic(), requesterId, Role.valueOf(requesterRole)));
         if (!isOwner && !isPrivileged) {
             throw new UnauthorizedException("You are not authorized to modify this appointment");
         }

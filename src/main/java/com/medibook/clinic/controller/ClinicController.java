@@ -5,6 +5,7 @@ import com.medibook.clinic.dto.*;
 import com.medibook.clinic.service.ClinicService;
 import com.medibook.common.response.ApiResponse;
 import com.medibook.common.dto.PagedResponse;
+import com.medibook.common.util.Role;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -49,9 +50,11 @@ public class ClinicController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
     public ResponseEntity<ApiResponse<ClinicResponse>> updateClinic(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable Long id,
             @Valid @RequestBody ClinicUpdateRequest request) {
-        ClinicResponse response = clinicService.updateClinic(id, request);
+        ClinicResponse response = clinicService.updateClinic(
+                id, request, principal.getId(), Role.valueOf(principal.getRole()));
         return ResponseEntity.ok(ApiResponse.success("Clinic updated successfully", response));
     }
 
@@ -67,25 +70,31 @@ public class ClinicController {
     @PostMapping("/{clinicId}/staff")
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
     public ResponseEntity<ApiResponse<StaffResponse>> assignStaff(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable Long clinicId,
             @Valid @RequestBody StaffAssignRequest request) {
-        StaffResponse response = clinicService.assignStaff(clinicId, request);
+        StaffResponse response = clinicService.assignStaff(
+                clinicId, request, principal.getId(), Role.valueOf(principal.getRole()));
         return ResponseEntity.ok(ApiResponse.success("Staff assigned successfully", response));
     }
 
     @GetMapping("/{clinicId}/staff")
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
-    public ResponseEntity<ApiResponse<List<StaffResponse>>> getClinicStaff(@PathVariable Long clinicId) {
-        List<StaffResponse> response = clinicService.getClinicStaff(clinicId);
+    public ResponseEntity<ApiResponse<List<StaffResponse>>> getClinicStaff(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @PathVariable Long clinicId) {
+        List<StaffResponse> response = clinicService.getClinicStaff(
+                clinicId, principal.getId(), Role.valueOf(principal.getRole()));
         return ResponseEntity.ok(ApiResponse.success("Staff fetched successfully", response));
     }
 
     @DeleteMapping("/{clinicId}/staff/{staffId}")
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> removeStaff(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable Long clinicId,
             @PathVariable Long staffId) {
-        clinicService.removeStaff(clinicId, staffId);
+        clinicService.removeStaff(clinicId, staffId, principal.getId(), Role.valueOf(principal.getRole()));
         return ResponseEntity.ok(ApiResponse.success("Staff removed successfully", null));
     }
 }

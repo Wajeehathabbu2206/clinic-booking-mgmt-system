@@ -1,6 +1,8 @@
 package com.medibook.slot.controller;
 
+import com.medibook.auth.security.CustomUserDetails;
 import com.medibook.common.response.ApiResponse;
+import com.medibook.common.util.Role;
 import com.medibook.slot.dto.GenerateSlotsRequest;
 import com.medibook.slot.dto.SlotResponse;
 import com.medibook.slot.service.SlotService;
@@ -8,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,8 +25,11 @@ public class SlotController {
 
     @PostMapping("/generate")
     @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
-    public ApiResponse<List<SlotResponse>> generateSlots(@Valid @RequestBody GenerateSlotsRequest request) {
-        List<SlotResponse> slots = slotService.generateSlots(request);
+    public ApiResponse<List<SlotResponse>> generateSlots(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @Valid @RequestBody GenerateSlotsRequest request) {
+        List<SlotResponse> slots = slotService.generateSlots(
+                request, principal.getId(), Role.valueOf(principal.getRole()));
         return ApiResponse.success("Slots generated successfully", slots);
     }
 
@@ -39,10 +45,12 @@ public class SlotController {
     @GetMapping("/doctor/{doctorId}")
     @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN','RECEPTIONIST')")
     public ApiResponse<List<SlotResponse>> getAllSlots(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
-        List<SlotResponse> slots = slotService.getAllSlots(doctorId, fromDate, toDate);
+        List<SlotResponse> slots = slotService.getAllSlots(
+            doctorId, fromDate, toDate, principal.getId(), Role.valueOf(principal.getRole()));
         return ApiResponse.success("Slots fetched", slots);
     }
 
@@ -53,13 +61,19 @@ public class SlotController {
 
     @PatchMapping("/{id}/block")
     @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
-    public ApiResponse<SlotResponse> blockSlot(@PathVariable Long id) {
-        return ApiResponse.success("Slot blocked", slotService.blockSlot(id));
+    public ApiResponse<SlotResponse> blockSlot(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @PathVariable Long id) {
+        return ApiResponse.success("Slot blocked", slotService.blockSlot(
+                id, principal.getId(), Role.valueOf(principal.getRole())));
     }
 
     @PatchMapping("/{id}/unblock")
     @PreAuthorize("hasAnyAuthority('DOCTOR','CLINIC_ADMIN','SUPER_ADMIN')")
-    public ApiResponse<SlotResponse> unblockSlot(@PathVariable Long id) {
-        return ApiResponse.success("Slot unblocked", slotService.unblockSlot(id));
+    public ApiResponse<SlotResponse> unblockSlot(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @PathVariable Long id) {
+        return ApiResponse.success("Slot unblocked", slotService.unblockSlot(
+                id, principal.getId(), Role.valueOf(principal.getRole())));
     }
 }

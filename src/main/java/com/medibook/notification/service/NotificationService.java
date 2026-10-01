@@ -113,6 +113,18 @@ public class NotificationService {
         emailService.sendEmail(recipient.getEmail(), title, message);
     }
 
+    @Transactional
+    public void notifyDoctorApplication(User recipient, NotificationType type, String title, String message) {
+        Notification notification = new Notification();
+        notification.setRecipient(recipient);
+        notification.setType(type);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setRead(false);
+        notificationRepository.save(notification);
+        emailService.sendEmail(recipient.getEmail(), title, message);
+    }
+
     @Transactional(readOnly = true)
     public List<NotificationResponse> getMyNotifications(Long userId) {
         return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId).stream()

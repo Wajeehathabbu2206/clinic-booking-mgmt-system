@@ -7,6 +7,7 @@ import com.medibook.clinic.repository.ClinicStaffRepository;
 import com.medibook.common.dto.PagedResponse;
 import com.medibook.common.exception.DuplicateResourceException;
 import com.medibook.common.exception.ResourceNotFoundException;
+import com.medibook.common.util.Role;
 import com.medibook.user.entity.User;
 import com.medibook.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class ClinicServiceImpl implements ClinicService {
     private final ClinicRepository clinicRepository;
     private final ClinicStaffRepository clinicStaffRepository;
     private final UserRepository userRepository;
+    private final ClinicAccessService clinicAccessService;
 
     @Override
     @Transactional
@@ -79,8 +81,9 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     @Transactional
-    public ClinicResponse updateClinic(Long clinicId, ClinicUpdateRequest request) {
+    public ClinicResponse updateClinic(Long clinicId, ClinicUpdateRequest request, Long requesterId, Role requesterRole) {
         Clinic clinic = findClinic(clinicId);
+        clinicAccessService.assertCanManageClinic(clinic, requesterId, requesterRole);
 
         if (request.getName() != null) clinic.setName(request.getName());
         if (request.getDescription() != null) clinic.setDescription(request.getDescription());
@@ -105,8 +108,9 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     @Transactional
-    public StaffResponse assignStaff(Long clinicId, StaffAssignRequest request) {
+    public StaffResponse assignStaff(Long clinicId, StaffAssignRequest request, Long requesterId, Role requesterRole) {
         Clinic clinic = findClinic(clinicId);
+        clinicAccessService.assertCanManageClinic(clinic, requesterId, requesterRole);
 
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
@@ -127,7 +131,8 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     @Transactional
-    public void removeStaff(Long clinicId, Long staffId) {
+    public void removeStaff(Long clinicId, Long staffId, Long requesterId, Role requesterRole) {
+        clinicAccessService.assertCanManageClinic(findClinic(clinicId), requesterId, requesterRole);
         ClinicStaff staff = clinicStaffRepository.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff record not found with id: " + staffId));
 
@@ -140,8 +145,8 @@ public class ClinicServiceImpl implements ClinicService {
     }
 
     @Override
-    public List<StaffResponse> getClinicStaff(Long clinicId) {
-        findClinic(clinicId);
+    public List<StaffResponse> getClinicStaff(Long clinicId, Long requesterId, Role requesterRole) {
+        clinicAccessService.assertCanManageClinic(findClinic(clinicId), requesterId, requesterRole);
         return clinicStaffRepository.findByClinicIdAndStatus(clinicId, StaffStatus.ACTIVE)
                 .stream()
                 .map(this::toStaffResponse)

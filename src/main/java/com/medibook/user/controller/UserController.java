@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getUserById(@PathVariable Long id) {
         UserProfileResponse response = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.success("User fetched successfully", response));
