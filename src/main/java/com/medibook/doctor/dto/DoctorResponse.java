@@ -26,6 +26,8 @@ public class DoctorResponse {
     private Integer experienceYears;
     private BigDecimal consultationFee;
     private String bio;
+    private Double averageRating;
+    private Long totalReviews;
     private Boolean isActive;
     private LocalDateTime createdAt;
 }

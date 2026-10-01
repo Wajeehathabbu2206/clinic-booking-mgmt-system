@@ -50,6 +50,14 @@ public class Doctor extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
+    @Column(name = "average_rating", nullable = false, precision = 3, scale = 2)
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @Column(name = "total_reviews", nullable = false)
+    @Builder.Default
+    private Long totalReviews = 0L;
+
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;

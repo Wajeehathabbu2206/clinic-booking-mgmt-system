@@ -19,6 +19,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     long countByDoctorId(Long doctorId);
 
+    @Query("select coalesce(avg(r.rating), 0.0) from Review r where r.doctor.id = :doctorId")
+    Double calculateAverageRatingByDoctorId(@Param("doctorId") Long doctorId);
+
     @Query("select avg(r.rating) from Review r where r.doctor.id = :doctorId")
     Double findAverageRatingByDoctorId(@Param("doctorId") Long doctorId);
 

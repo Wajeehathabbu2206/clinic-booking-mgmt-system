@@ -167,6 +167,8 @@ public class DoctorService {
                 .experienceYears(doctor.getExperienceYears())
                 .consultationFee(doctor.getConsultationFee())
                 .bio(doctor.getBio())
+                .averageRating(doctor.getAverageRating())
+                .totalReviews(doctor.getTotalReviews())
                 .isActive(doctor.getIsActive())
                 .createdAt(doctor.getCreatedAt())
                 .build();

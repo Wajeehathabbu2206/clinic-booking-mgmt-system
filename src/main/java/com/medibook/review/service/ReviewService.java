@@ -2,19 +2,20 @@ package com.medibook.review.service;
 
 import com.medibook.appointment.entity.Appointment;
 import com.medibook.appointment.entity.AppointmentStatus;
-import com.medibook.common.exception.AppointmentNotFoundException;
-import com.medibook.common.exception.InvalidAppointmentStateException;
 import com.medibook.appointment.repository.AppointmentRepository;
+import com.medibook.common.exception.AppointmentNotFoundException;
 import com.medibook.common.exception.DuplicateResourceException;
+import com.medibook.common.exception.InvalidAppointmentStateException;
+import com.medibook.common.exception.ReviewNotFoundException;
 import com.medibook.common.exception.UnauthorizedException;
 import com.medibook.common.response.PagedResponse;
+import com.medibook.doctor.entity.Doctor;
 import com.medibook.doctor.repository.DoctorRepository;
 import com.medibook.review.dto.CreateReviewRequest;
 import com.medibook.review.dto.DoctorRatingSummaryResponse;
 import com.medibook.review.dto.ReviewRequest;
 import com.medibook.review.dto.ReviewResponse;
 import com.medibook.review.entity.Review;
-import com.medibook.common.exception.ReviewNotFoundException;
 import com.medibook.review.repository.ReviewRepository;
 import com.medibook.user.entity.User;
 import com.medibook.user.repository.UserRepository;
@@ -68,7 +69,9 @@ public class ReviewService {
                 .comment(clean(request.getComment()))
                 .build();
 
-        return toResponse(reviewRepository.saveAndFlush(review));
+        Review saved = reviewRepository.saveAndFlush(review);
+        refreshDoctorRating(saved.getDoctor());
+        return toResponse(saved);
     }
 
     @Transactional
@@ -80,7 +83,9 @@ public class ReviewService {
         review.setRating(request.getRating());
         review.setComment(clean(request.getComment()));
 
-        return toResponse(reviewRepository.saveAndFlush(review));
+        Review saved = reviewRepository.saveAndFlush(review);
+        refreshDoctorRating(saved.getDoctor());
+        return toResponse(saved);
     }
 
     @Transactional
@@ -89,7 +94,10 @@ public class ReviewService {
         Review review = findReview(reviewId);
         assertAuthor(review, currentUser);
 
+        Doctor doctor = review.getDoctor();
         reviewRepository.delete(review);
+        reviewRepository.flush();
+        refreshDoctorRating(doctor);
     }
 
     @Transactional(readOnly = true)
@@ -151,6 +159,12 @@ public class ReviewService {
     private User getUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("Authenticated user not found"));
+    }
+
+    private void refreshDoctorRating(Doctor doctor) {
+        doctor.setAverageRating(round1(reviewRepository.calculateAverageRatingByDoctorId(doctor.getId())));
+        doctor.setTotalReviews(reviewRepository.countByDoctorId(doctor.getId()));
+        doctorRepository.save(doctor);
     }
 
     private Review findReview(Long id) {
