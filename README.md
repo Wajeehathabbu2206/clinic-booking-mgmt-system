@@ -46,9 +46,9 @@ The project is built in phases, backend before frontend, with each phase complet
 | 5 | Appointment Booking | ✅ Completed |
 | 6 | Calendar Views | ✅ Completed |
 | 7 | Notifications | ✅ Completed |
-| 8 | Medical Records | 🔜 Planned |
-| 9 | Reviews & Ratings | 🔜 Planned |
-| 10 | Analytics Dashboard | 🔜 Planned |
+| 8 | Medical Records | ✅ Completed |
+| 9 | Reviews & Ratings | ✅ Completed |
+| 10 | Analytics Dashboard | ✅ Completed |
 | 11 | Polish & Testing | 🔜 Planned |
 
 ## Getting Started
