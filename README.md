@@ -13,6 +13,7 @@ MediBook is a multi-clinic appointment booking and patient records platform buil
 
 **Frontend**
 - React + Vite
+- Javascript
 - Tailwind CSS
 
 ## Architecture
@@ -27,6 +28,7 @@ notification | review | analytics
 ```
 
 **Frontend feature folders**
+Separate modules for admin, doctors, clinics, and patients
 ```
 auth | clinic | doctor | patient | appointment
 calendar | medical-record | notification | review
