@@ -50,7 +50,7 @@ public class Doctor extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
-    @Column(name = "average_rating", nullable = false, precision = 3, scale = 2)
+    @Column(name = "average_rating", nullable = false)
     @Builder.Default
     private Double averageRating = 0.0;
 

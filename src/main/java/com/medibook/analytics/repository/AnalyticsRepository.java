@@ -51,6 +51,14 @@ public interface AnalyticsRepository extends Repository<Appointment, Long> {
                                     @Param("toDate") LocalDate toDate);
 
     @Query("""
+            select new com.medibook.analytics.dto.StatusCount(a.status, count(a))
+            from Appointment a
+            where a.patient.id = :patientId
+            group by a.status
+            """)
+    List<StatusCount> countPatientAppointmentsByStatus(@Param("patientId") Long patientId);
+
+    @Query("""
             select new com.medibook.analytics.dto.DailyStatusCount(s.slotDate, a.status, count(a))
             from Appointment a join a.slot s
             where (:clinicId is null or a.clinic.id = :clinicId)
@@ -220,6 +228,22 @@ public interface AnalyticsRepository extends Repository<Appointment, Long> {
                                                @Param("fromDate") LocalDate fromDate,
                                                @Param("toDate") LocalDate toDate,
                                                Pageable pageable);
+
+    @Query("""
+            select new com.medibook.analytics.dto.AppointmentSummary(
+                   a.id, p.fullName, du.fullName, c.name,
+                   s.slotDate, s.startTime, s.endTime, a.status, a.reasonForVisit)
+            from Appointment a join a.patient p join a.doctor d join d.user du
+                 join a.clinic c join a.slot s
+            where a.status in :statuses
+              and p.id = :patientId
+              and s.slotDate <= :toDate
+            order by s.slotDate desc, s.startTime desc
+            """)
+    List<AppointmentSummary> findPatientPastSummaries(@Param("statuses") Collection<AppointmentStatus> statuses,
+                                                      @Param("patientId") Long patientId,
+                                                      @Param("toDate") LocalDate toDate,
+                                                      Pageable pageable);
 
     /** Completed appointments of a patient that have no review yet. */
     @Query("""
