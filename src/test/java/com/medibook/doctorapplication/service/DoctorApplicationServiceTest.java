@@ -27,6 +27,7 @@ import com.medibook.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
+import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -91,10 +92,13 @@ class DoctorApplicationServiceTest {
 
         assertEquals(ApplicationStatus.PENDING, response.status());
         assertEquals("REG-123", response.registrationNumber());
-        verify(events).publishEvent(argThat(event ->
-                event instanceof DoctorApplicationNotificationEvent notification
-                        && notification.recipientIds().equals(List.of(reviewer.getId()))
-                        && notification.type() == NotificationType.DOCTOR_APPLICATION_SUBMITTED));
+        ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(events).publishEvent(eventCaptor.capture());
+        assertInstanceOf(DoctorApplicationNotificationEvent.class, eventCaptor.getValue());
+        DoctorApplicationNotificationEvent notification =
+                (DoctorApplicationNotificationEvent) eventCaptor.getValue();
+        assertEquals(List.of(reviewer.getId()), notification.recipientIds());
+        assertEquals(NotificationType.DOCTOR_APPLICATION_SUBMITTED, notification.type());
     }
 
     @Test
