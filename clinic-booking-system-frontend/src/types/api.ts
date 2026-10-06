@@ -5,7 +5,7 @@ export interface ApiResponse<T> {
   timestamp?: string
 }
 
-// Error bodies may omit `data` entirely (backend uses NON_NULL).
+// Error bodies may omit `data` entirely (backend uses NON_NULL). 
 export interface ApiErrorResponse {
   success: false
   message: string
