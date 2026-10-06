@@ -5,6 +5,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -21,5 +23,7 @@ class CorsConfigTest {
         assertNotNull(configuration);
         assertEquals(2, configuration.getAllowedOrigins().size());
         assertEquals("https://clinic.example", configuration.getAllowedOrigins().get(0));
+        assertEquals("http://localhost:5173", configuration.checkOrigin("http://localhost:5173"));
+        assertNotNull(configuration.checkHeaders(List.of("Authorization")));
     }
 }
