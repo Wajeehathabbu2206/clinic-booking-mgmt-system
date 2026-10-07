@@ -134,7 +134,7 @@ Most endpoints require a bearer access token returned by login. Access is contro
 | `JWT_SECRET` | JWT signing secret (at least 32 bytes for HS256) |
 | `JWT_EXPIRATION_MS` | Token lifetime in milliseconds (default: 86400000) |
 | `FRONTEND_ORIGIN` | Allowed browser origin (default: `http://localhost:5173`) |
-| `EMAIL_PROVIDER` | `brevo` (default) or `console` |
+| `EMAIL_PROVIDER` | `brevo` |
 | `BREVO_API_KEY` | Brevo API key when using the Brevo provider |
 | `EMAIL_SENDER_ADDRESS` | Verified sender address for Brevo |
 | `EMAIL_SENDER_NAME` | Sender display name (default: `MediBook`) |
