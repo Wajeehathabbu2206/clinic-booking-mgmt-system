@@ -1,8 +1,12 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '@/context/useAuth'
 import { PATHS } from '@/routes/paths'
 import { cn } from '@/utils/cn'
+import UserMenu from './UserMenu'
 
 export default function PublicLayout() {
+  const { isAuthenticated } = useAuth()
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-gray-200 bg-white">
@@ -23,18 +27,33 @@ export default function PublicLayout() {
             >
               Find Doctors
             </NavLink>
-            <Link
-              to={PATHS.login}
-              className="rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100"
-            >
-              Log in
-            </Link>
-            <Link
-              to={PATHS.register}
-              className="rounded-lg bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700"
-            >
-              Sign up
-            </Link>
+
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to={PATHS.dashboard}
+                  className="rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  Dashboard
+                </Link>
+                <UserMenu />
+              </>
+            ) : (
+              <>
+                <Link
+                  to={PATHS.login}
+                  className="rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to={PATHS.register}
+                  className="rounded-lg bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>

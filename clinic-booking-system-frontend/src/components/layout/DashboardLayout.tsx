@@ -1,21 +1,16 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '@/context/useAuth'
+import { NAV_ITEMS } from '@/routes/navConfig'
 import { PATHS } from '@/routes/paths'
 import { cn } from '@/utils/cn'
-
-const navItems = [
-  { label: 'Dashboard', to: PATHS.dashboard },
-  { label: 'My Profile', to: PATHS.profile },
-  { label: 'Clinics', to: PATHS.clinics },
-  { label: 'Find Doctors', to: PATHS.doctors },
-  { label: 'Appointments', to: PATHS.appointments },
-  { label: 'Calendar', to: PATHS.calendar },
-  { label: 'Medical Records', to: PATHS.medicalRecords },
-  { label: 'Notifications', to: PATHS.notifications },
-]
+import UserMenu from './UserMenu'
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { hasRole } = useAuth()
+
+  const visibleItems = NAV_ITEMS.filter((item) => !item.roles || hasRole(...item.roles))
 
   return (
     <div className="min-h-screen md:flex">
@@ -40,7 +35,7 @@ export default function DashboardLayout() {
           </Link>
         </div>
         <nav className="space-y-1 p-3">
-          {navItems.map((item) => (
+          {visibleItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -73,7 +68,9 @@ export default function DashboardLayout() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <div className="ml-auto text-sm text-gray-600">Guest</div>
+          <div className="ml-auto">
+            <UserMenu />
+          </div>
         </header>
 
         <main className="flex-1 p-4 md:p-6">
