@@ -7,7 +7,7 @@ import { PATHS } from '@/routes/paths'
 import { getErrorMessage, getFieldErrors } from '@/utils/errors'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const PHONE_REGEX = /^[0-9+\-\s]{7,15}$/
+const PHONE_REGEX = /^[6-9]\d{9}$/
 
 export default function RegisterPage() {
   const { register, isAuthenticated } = useAuth()
@@ -33,7 +33,7 @@ export default function RegisterPage() {
     if (!email.trim()) next.email = 'Email is required'
     else if (!EMAIL_REGEX.test(email.trim())) next.email = 'Enter a valid email address'
     if (phoneNumber.trim() && !PHONE_REGEX.test(phoneNumber.trim())) {
-      next.phoneNumber = 'Enter a valid phone number'
+            next.phoneNumber = 'Enter a valid 10-digit mobile number'
     }
     if (!password) next.password = 'Password is required'
     else if (password.length < 8) next.password = 'Password must be at least 8 characters'
@@ -104,7 +104,7 @@ export default function RegisterPage() {
           label="Phone number (optional)"
           type="tel"
           autoComplete="tel"
-          placeholder="+91 98765 43210"
+          placeholder="9876543210"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
           error={errors.phoneNumber}

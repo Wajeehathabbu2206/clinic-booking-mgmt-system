@@ -19,6 +19,8 @@ export interface AuthContextValue {
   register: (payload: RegisterRequest) => Promise<AuthUser>
   logout: () => void
   hasRole: (...roles: Role[]) => boolean
+  /** Update display fields of the logged-in user (e.g. after a profile edit). */
+  updateUser: (changes: Partial<Pick<AuthUser, 'fullName'>>) => void
 }
 
 const EMPTY_SESSION: Session = { token: null, user: null }
@@ -84,6 +86,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [session.user],
   )
 
+  const updateUser = useCallback(
+    (changes: Partial<Pick<AuthUser, 'fullName'>>) => {
+      if (!session.user) return
+      const user: AuthUser = { ...session.user, ...changes }
+      storage.setUser(user)
+      setSession((prev) => ({ ...prev, user }))
+    },
+    [session.user],
+  )
+
   // A 401 from any protected API call (axios interceptor already cleared storage).
   useEffect(() => {
     setUnauthorizedHandler(() => setSession(EMPTY_SESSION))
@@ -121,8 +133,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       hasRole,
+      updateUser,
     }),
-    [session, login, register, logout, hasRole],
+    [session, login, register, logout, hasRole, updateUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

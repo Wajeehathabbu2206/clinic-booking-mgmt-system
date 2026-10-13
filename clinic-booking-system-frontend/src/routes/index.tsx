@@ -9,6 +9,7 @@ import NotFoundPage from '@/pages/NotFoundPage'
 import { ROUTE_ROLES } from './navConfig'
 import { PATHS } from './paths'
 import ProtectedRoute from './ProtectedRoute'
+import ProfilePage from '@/features/user/ProfilePage'
 
 export const router = createBrowserRouter([
   // Public pages
@@ -48,10 +49,7 @@ export const router = createBrowserRouter([
             path: PATHS.dashboard,
             element: <PlaceholderPage title="Dashboard" phase="F10 – Analytics Dashboard" />,
           },
-          {
-            path: PATHS.profile,
-            element: <PlaceholderPage title="My Profile" phase="F2 – Clinic & User Profiles" />,
-          },
+          { path: PATHS.profile, element: <ProfilePage /> },
           {
             path: PATHS.clinics,
             element: <PlaceholderPage title="Clinics" phase="F2 – Clinic & User Profiles" />,
