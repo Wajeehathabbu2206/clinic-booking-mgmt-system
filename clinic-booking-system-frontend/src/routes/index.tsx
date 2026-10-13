@@ -9,6 +9,7 @@ import ClinicListPage from '@/features/clinic/ClinicListPage'
 import ProfilePage from '@/features/user/ProfilePage'
 import DoctorListPage from '@/features/doctor/DoctorListPage'
 import DoctorDetailPage from '@/features/doctor/DoctorDetailPage'
+import DoctorFormPage from '@/features/doctor/DoctorFormPage'
 import ForbiddenPage from '@/pages/ForbiddenPage'
 import HomePage from '@/pages/HomePage'
 import NotFoundPage from '@/pages/NotFoundPage'
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
       { path: PATHS.clinics, element: <ClinicListPage /> },
       { path: PATHS.clinicDetail(), element: <ClinicDetailPage /> },
       { path: PATHS.doctors, element: <DoctorListPage /> },
+      {
+        element: <ProtectedRoute allowedRoles={ROUTE_ROLES.doctorManage} />,
+        children: [{ path: PATHS.doctorNew, element: <DoctorFormPage /> }],
+      },
       {
         path: PATHS.doctorDetail(),
         element: <DoctorDetailPage />,

@@ -10,6 +10,7 @@ import com.medibook.common.exception.UnauthorizedException;
 import com.medibook.doctor.dto.DoctorCreateRequest;
 import com.medibook.doctor.dto.DoctorResponse;
 import com.medibook.doctor.dto.DoctorUpdateRequest;
+import com.medibook.doctor.dto.DoctorUserOption;
 import com.medibook.doctor.entity.Doctor;
 import com.medibook.doctor.repository.DoctorRepository;
 import com.medibook.doctor.repository.DoctorSpecification;
@@ -26,6 +27,7 @@ import com.medibook.common.util.RoleUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -93,6 +95,18 @@ public class DoctorService {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
         return mapToResponse(doctor);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DoctorUserOption> getEligibleDoctorUsers(Long clinicId, Long requesterId, Role requesterRole) {
+        Clinic clinic = clinicRepository.findById(clinicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Clinic not found with id: " + clinicId));
+        clinicAccessService.assertCanManageClinic(clinic, requesterId, requesterRole);
+
+        return userRepository.findByRoleAndEnabledTrueOrderByFullNameAsc(Role.DOCTOR).stream()
+                .filter(user -> !doctorRepository.existsByUserId(user.getId()))
+                .map(user -> new DoctorUserOption(user.getId(), user.getFullName(), user.getEmail()))
+                .toList();
     }
 
        @Transactional(readOnly = true)

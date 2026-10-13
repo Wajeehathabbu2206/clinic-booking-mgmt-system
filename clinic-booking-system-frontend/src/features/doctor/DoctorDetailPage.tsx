@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { doctorApi } from '@/api/doctorApi'
-import { Alert, Badge, Button, Card, Spinner } from '@/components/ui'
+import { Alert, Badge, Button, Card, Modal, Spinner } from '@/components/ui'
+import { useAuth } from '@/context/useAuth'
 import { PATHS } from '@/routes/paths'
+import { ROLES } from '@/types/auth'
 import type { Doctor } from '@/types/doctor'
 import { formatCurrency, formatDate, getInitials } from '@/utils/format'
 import { getErrorMessage, getErrorStatus } from '@/utils/errors'
@@ -20,11 +22,17 @@ export default function DoctorDetailPage() {
   const { id: idParam } = useParams()
   const doctorId = Number(idParam)
   const validId = Number.isInteger(doctorId) && doctorId > 0
+  const { hasRole } = useAuth()
+  const canManageDoctors = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN)
   const [doctor, setDoctor] = useState<Doctor | null>(null)
   const [loading, setLoading] = useState(validId)
   const [notFound, setNotFound] = useState(!validId)
   const [error, setError] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false)
+  const [deactivating, setDeactivating] = useState(false)
+  const [actionError, setActionError] = useState('')
+  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     if (!validId) return
@@ -50,6 +58,21 @@ export default function DoctorDetailPage() {
       cancelled = true
     }
   }, [doctorId, validId, reloadKey])
+
+  const handleDeactivate = async () => {
+    setDeactivating(true)
+    setActionError('')
+    try {
+      await doctorApi.deactivate(doctorId)
+      setDoctor((current) => current ? { ...current, isActive: false } : current)
+      setConfirmDeactivate(false)
+      setSuccess('Doctor profile deactivated successfully')
+    } catch (err) {
+      setActionError(getErrorMessage(err))
+    } finally {
+      setDeactivating(false)
+    }
+  }
 
   if (notFound) {
     return (
@@ -80,24 +103,32 @@ export default function DoctorDetailPage() {
         &larr; Find doctors
       </Link>
 
+      {success && <Alert variant="success" onClose={() => setSuccess('')}>{success}</Alert>}
+      {actionError && !confirmDeactivate && <Alert variant="error">{actionError}</Alert>}
+
       <Card>
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-          <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary-600 text-2xl font-semibold text-white">
-            {getInitials(doctor.fullName)}
-          </span>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-semibold text-gray-900">{doctor.fullName}</h1>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Badge variant="blue">{doctor.specialization}</Badge>
-              {doctor.isActive && <Badge variant="green">Active</Badge>}
-            </div>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 flex-1 flex-col gap-5 sm:flex-row sm:items-start">
+            <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary-600 text-2xl font-semibold text-white">
+              {getInitials(doctor.fullName)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl font-semibold text-gray-900">{doctor.fullName}</h1>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Badge variant="blue">{doctor.specialization}</Badge>
+                <Badge variant={doctor.isActive ? 'green' : 'red'}>{doctor.isActive ? 'Active' : 'Inactive'}</Badge>
+              </div>
             {doctor.qualification && <p className="mt-3 text-gray-700">{doctor.qualification}</p>}
             <p className="mt-2 text-sm text-gray-600">
               {(doctor.totalReviews ?? 0) > 0
                 ? `★ ${Number(doctor.averageRating ?? 0).toFixed(1)} · ${doctor.totalReviews} reviews`
                 : 'No reviews yet'}
             </p>
+            </div>
           </div>
+          {canManageDoctors && doctor.isActive && (
+            <Button variant="danger" onClick={() => setConfirmDeactivate(true)}>Deactivate</Button>
+          )}
         </div>
 
         <dl className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
@@ -125,6 +156,21 @@ export default function DoctorDetailPage() {
           </section>
         )}
       </Card>
+
+      <Modal
+        open={confirmDeactivate}
+        title="Deactivate doctor profile?"
+        onClose={() => deactivating ? undefined : setConfirmDeactivate(false)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmDeactivate(false)} disabled={deactivating}>Cancel</Button>
+            <Button variant="danger" onClick={handleDeactivate} loading={deactivating}>Deactivate</Button>
+          </>
+        }
+      >
+        <p>{doctor.fullName} will no longer appear in active doctor searches.</p>
+        {actionError && <Alert variant="error" className="mt-3">{actionError}</Alert>}
+      </Modal>
     </div>
   )
 }

@@ -30,3 +30,20 @@ export interface DoctorSearchParams {
   sortBy?: string
   sortDir?: 'asc' | 'desc'
 }
+
+export interface DoctorCreateRequest {
+  userId: number
+  clinicId: number
+  specialization: string
+  qualification?: string
+  registrationNumber?: string
+  experienceYears?: number
+  consultationFee?: number
+  bio?: string
+}
+
+export interface DoctorUserOption {
+  userId: number
+  fullName: string
+  email: string
+}

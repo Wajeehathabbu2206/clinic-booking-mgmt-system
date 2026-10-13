@@ -1,8 +1,20 @@
 import axiosInstance from './axiosInstance'
 import type { ApiResponse, PagedResponse } from '@/types/api'
-import type { Doctor, DoctorSearchParams } from '@/types/doctor'
+import type { Doctor, DoctorCreateRequest, DoctorSearchParams, DoctorUserOption } from '@/types/doctor'
 
 export const doctorApi = {
+  async getEligibleUsers(clinicId: number): Promise<DoctorUserOption[]> {
+    const res = await axiosInstance.get<ApiResponse<DoctorUserOption[]>>('/doctors/eligible-users', {
+      params: { clinicId },
+    })
+    return res.data.data
+  },
+
+  async create(payload: DoctorCreateRequest): Promise<Doctor> {
+    const res = await axiosInstance.post<ApiResponse<Doctor>>('/doctors', payload)
+    return res.data.data
+  },
+
   async search(params: DoctorSearchParams = {}): Promise<PagedResponse<Doctor>> {
     const res = await axiosInstance.get<ApiResponse<PagedResponse<Doctor>>>('/doctors/search', {
       params,
@@ -13,6 +25,10 @@ export const doctorApi = {
   async getById(id: number): Promise<Doctor> {
     const res = await axiosInstance.get<ApiResponse<Doctor>>(`/doctors/${id}`)
     return res.data.data
+  },
+
+  async deactivate(id: number): Promise<void> {
+    await axiosInstance.delete(`/doctors/${id}`)
   },
 
   async getByClinic(

@@ -4,6 +4,7 @@ export const PATHS = {
   register: '/register',
   forbidden: '/forbidden',
   doctors: '/doctors',
+  doctorNew: '/doctors/new',
   doctorDetail: (id: number | string = ':id') => `/doctors/${id}`,
   dashboard: '/dashboard',
   profile: '/profile',

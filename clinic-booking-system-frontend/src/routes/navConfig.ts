@@ -5,6 +5,7 @@ import { PATHS } from './paths'
 // Roles allowed on role-restricted routes (undefined = any logged-in user).
 export const ROUTE_ROLES = {
   clinicManage: [ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN] as Role[],
+  doctorManage: [ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN] as Role[],
   calendar: [ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN, ROLES.DOCTOR, ROLES.RECEPTIONIST] as Role[],
   // Backend: records are visible only to the patient and the treating doctor.
   medicalRecords: [ROLES.PATIENT, ROLES.DOCTOR] as Role[],

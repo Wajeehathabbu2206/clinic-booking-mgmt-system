@@ -7,6 +7,7 @@ import com.medibook.common.util.Role;
 import com.medibook.doctor.dto.DoctorCreateRequest;
 import com.medibook.doctor.dto.DoctorResponse;
 import com.medibook.doctor.dto.DoctorUpdateRequest;
+import com.medibook.doctor.dto.DoctorUserOption;
 import com.medibook.doctor.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/doctors")
@@ -47,6 +49,15 @@ public class DoctorController {
     @GetMapping("/{id}")
     public ApiResponse<DoctorResponse> getDoctor(@PathVariable Long id) {
         return ApiResponse.success("Doctor fetched successfully", doctorService.getDoctorById(id));
+    }
+
+    @GetMapping("/eligible-users")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
+    public ApiResponse<List<DoctorUserOption>> getEligibleDoctorUsers(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @RequestParam Long clinicId) {
+        return ApiResponse.success("Eligible doctor accounts fetched successfully",
+                doctorService.getEligibleDoctorUsers(clinicId, principal.getId(), Role.valueOf(principal.getRole())));
     }
 
         @GetMapping("/search")

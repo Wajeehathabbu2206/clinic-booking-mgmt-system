@@ -31,6 +31,11 @@ public class CustomUserDetails implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // The security configuration and @PreAuthorize expressions use
         // hasAuthority with the plain enum names.
+        if (user.getRole() == com.medibook.common.util.Role.CLINIC_OWNER) {
+            return List.of(
+                    new SimpleGrantedAuthority(user.getRole().name()),
+                    new SimpleGrantedAuthority(com.medibook.common.util.Role.CLINIC_ADMIN.name()));
+        }
         return List.of(new SimpleGrantedAuthority(user.getRole().name()));
     }
 

@@ -19,7 +19,7 @@ public class ClinicAccessService {
         if (role == Role.SUPER_ADMIN) {
             return true;
         }
-        return role == Role.CLINIC_ADMIN
+        return (role == Role.CLINIC_ADMIN || role == Role.CLINIC_OWNER)
                 && (clinic.getCreatedBy().getId().equals(userId)
                 || clinicStaffRepository.existsByClinicIdAndUserIdAndStatusAndRoleInClinic(
                         clinic.getId(), userId, StaffStatus.ACTIVE, Role.CLINIC_ADMIN));

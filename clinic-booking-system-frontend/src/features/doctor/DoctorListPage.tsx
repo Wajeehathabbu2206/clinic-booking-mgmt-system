@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { clinicApi } from '@/api/clinicApi'
 import { doctorApi } from '@/api/doctorApi'
 import { Alert, Button, EmptyState, Input, Pagination, Select, Spinner } from '@/components/ui'
@@ -8,6 +8,9 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import type { PagedResponse } from '@/types/api'
 import type { Doctor } from '@/types/doctor'
 import { getErrorMessage } from '@/utils/errors'
+import { useAuth } from '@/context/useAuth'
+import { PATHS } from '@/routes/paths'
+import { ROLES } from '@/types/auth'
 import DoctorCard from './DoctorCard'
 
 const PAGE_SIZE = 9
@@ -51,6 +54,8 @@ function initialClinicId(raw: string | null): string {
 
 export default function DoctorListPage() {
   const [searchParams] = useSearchParams()
+  const { hasRole } = useAuth()
+  const canManageDoctors = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN)
 
   const [nameInput, setNameInput] = useState('')
   const [specInput, setSpecInput] = useState('')
@@ -154,11 +159,14 @@ export default function DoctorListPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Find Doctors</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          Search by name or specialization, and narrow down by clinic, experience or fee.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Find Doctors</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Search by name or specialization, and narrow down by clinic, experience or fee.
+          </p>
+        </div>
+        {canManageDoctors && <Link to={PATHS.doctorNew}><Button>Add doctor</Button></Link>}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
