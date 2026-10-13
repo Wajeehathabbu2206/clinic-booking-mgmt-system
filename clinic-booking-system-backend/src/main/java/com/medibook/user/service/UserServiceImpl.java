@@ -3,14 +3,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.medibook.common.exception.ResourceNotFoundException;
+import com.medibook.common.exception.BadRequestException;
+import com.medibook.common.dto.PagedResponse;
 import com.medibook.common.exception.UnauthorizedException;
 import com.medibook.common.util.Role;
 import com.medibook.user.dto.UserProfileResponse;
 import com.medibook.user.dto.UserProfileUpdateRequest;
+import com.medibook.user.dto.UserPromotionCandidate;
 import com.medibook.user.entity.User;
 import com.medibook.user.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -43,7 +48,7 @@ public class UserServiceImpl implements UserService {
     
     private User findUser(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
     }
 
     // 🔹 Helper method 2: entity → DTO
@@ -136,8 +141,33 @@ public class UserServiceImpl implements UserService {
         if (user.getRole() == Role.SUPER_ADMIN && newRole != Role.SUPER_ADMIN) {
             throw new UnauthorizedException("Cannot change role of a SUPER_ADMIN account");
         }
+        if (newRole == Role.CLINIC_OWNER && user.getRole() != Role.PATIENT) {
+            throw new BadRequestException("Only patient accounts can be promoted to clinic owner");
+        }
 
         user.setRole(newRole);
+        return toResponse(userRepository.save(user));
+    }
+
+    @Override
+    public PagedResponse<UserPromotionCandidate> getClinicOwnerPromotionCandidates(int page, int size) {
+        if (page < 0 || size < 1 || size > 100) {
+            throw new BadRequestException("Page must be non-negative and size must be between 1 and 100");
+        }
+        var users = userRepository.findByRoleOrderByCreatedAtDesc(Role.PATIENT,
+                PageRequest.of(page, size, Sort.by("createdAt").descending()));
+        return PagedResponse.from(users.map(user -> new UserPromotionCandidate(
+                user.getId(), user.getFullName(), user.getEmail(), user.getCreatedAt())));
+    }
+
+    @Override
+    @Transactional
+    public UserProfileResponse promoteToClinicOwner(Long userId) {
+        User user = findUser(userId);
+        if (user.getRole() != Role.PATIENT) {
+            throw new BadRequestException("Only patient accounts can be promoted to clinic owner");
+        }
+        user.setRole(Role.CLINIC_OWNER);
         return toResponse(userRepository.save(user));
     }
 }

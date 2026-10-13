@@ -95,7 +95,7 @@ public class AppointmentService {
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getClinicAppointments(Long clinicId, Long requesterId, String requesterRole) {
-        if ("CLINIC_ADMIN".equals(requesterRole)) {
+        if ("CLINIC_ADMIN".equals(requesterRole) || "CLINIC_OWNER".equals(requesterRole)) {
             Clinic clinic = clinicRepository.findById(clinicId)
                     .orElseThrow(() -> new AppointmentNotFoundException("Clinic not found with id: " + clinicId));
             clinicAccessService.assertCanManageClinic(clinic, requesterId, Role.valueOf(requesterRole));
@@ -182,7 +182,7 @@ public class AppointmentService {
         boolean isOwner = appointment.getPatient().getId().equals(requesterId);
         boolean isPrivileged = "SUPER_ADMIN".equals(requesterRole)
                 || ("DOCTOR".equals(requesterRole) && appointment.getDoctor().getUser().getId().equals(requesterId))
-                || ("CLINIC_ADMIN".equals(requesterRole)
+                || (("CLINIC_ADMIN".equals(requesterRole) || "CLINIC_OWNER".equals(requesterRole))
                 && clinicAccessService.isClinicAdmin(
                     appointment.getClinic(), requesterId, Role.valueOf(requesterRole)));
         if (!isOwner && !isPrivileged) {
@@ -193,7 +193,7 @@ public class AppointmentService {
     private void assertCanModify(Appointment appointment, Long requesterId, String requesterRole) {
         boolean isOwner = appointment.getPatient().getId().equals(requesterId);
         boolean isPrivileged = "SUPER_ADMIN".equals(requesterRole)
-                || ("CLINIC_ADMIN".equals(requesterRole)
+                || (("CLINIC_ADMIN".equals(requesterRole) || "CLINIC_OWNER".equals(requesterRole))
                 && clinicAccessService.isClinicAdmin(
                     appointment.getClinic(), requesterId, Role.valueOf(requesterRole)));
         if (!isOwner && !isPrivileged) {

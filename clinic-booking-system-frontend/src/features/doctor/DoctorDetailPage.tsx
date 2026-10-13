@@ -23,7 +23,7 @@ export default function DoctorDetailPage() {
   const doctorId = Number(idParam)
   const validId = Number.isInteger(doctorId) && doctorId > 0
   const { hasRole } = useAuth()
-  const canManageDoctors = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN)
+  const canManageDoctors = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN, ROLES.CLINIC_OWNER)
   const [doctor, setDoctor] = useState<Doctor | null>(null)
   const [loading, setLoading] = useState(validId)
   const [notFound, setNotFound] = useState(!validId)
@@ -31,6 +31,7 @@ export default function DoctorDetailPage() {
   const [reloadKey, setReloadKey] = useState(0)
   const [confirmDeactivate, setConfirmDeactivate] = useState(false)
   const [deactivating, setDeactivating] = useState(false)
+  const [activating, setActivating] = useState(false)
   const [actionError, setActionError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -71,6 +72,20 @@ export default function DoctorDetailPage() {
       setActionError(getErrorMessage(err))
     } finally {
       setDeactivating(false)
+    }
+  }
+
+  const handleActivate = async () => {
+    setActivating(true)
+    setActionError('')
+    try {
+      await doctorApi.activate(doctorId)
+      setDoctor((current) => current ? { ...current, isActive: true } : current)
+      setSuccess('Doctor profile activated successfully')
+    } catch (err) {
+      setActionError(getErrorMessage(err))
+    } finally {
+      setActivating(false)
     }
   }
 
@@ -128,6 +143,9 @@ export default function DoctorDetailPage() {
           </div>
           {canManageDoctors && doctor.isActive && (
             <Button variant="danger" onClick={() => setConfirmDeactivate(true)}>Deactivate</Button>
+          )}
+          {canManageDoctors && !doctor.isActive && (
+            <Button onClick={handleActivate} loading={activating}>Activate</Button>
           )}
         </div>
 

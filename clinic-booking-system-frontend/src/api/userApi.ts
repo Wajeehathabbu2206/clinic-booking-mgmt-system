@@ -1,9 +1,21 @@
 import axiosInstance from './axiosInstance'
-import type { ApiResponse } from '@/types/api'
+import type { ApiResponse, PagedResponse } from '@/types/api'
 import type { Role } from '@/types/auth'
-import type { RoleUpdateRequest, UserProfile, UserProfileUpdateRequest } from '@/types/user'
+import type { RoleUpdateRequest, UserProfile, UserProfileUpdateRequest, UserPromotionCandidate } from '@/types/user'
 
 export const userApi = {
+  async getClinicOwnerPromotionCandidates(params: { page?: number; size?: number } = {}): Promise<PagedResponse<UserPromotionCandidate>> {
+    const res = await axiosInstance.get<ApiResponse<PagedResponse<UserPromotionCandidate>>>(
+      '/users/promotion-candidates', { params },
+    )
+    return res.data.data
+  },
+
+  async promoteToClinicOwner(id: number): Promise<UserProfile> {
+    const res = await axiosInstance.post<ApiResponse<UserProfile>>(`/users/${id}/promote-clinic-owner`)
+    return res.data.data
+  },
+
   async getMyProfile(): Promise<UserProfile> {
     const res = await axiosInstance.get<ApiResponse<UserProfile>>('/users/me')
     return res.data.data

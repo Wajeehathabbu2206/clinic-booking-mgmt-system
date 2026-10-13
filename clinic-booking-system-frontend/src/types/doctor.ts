@@ -1,3 +1,5 @@
+import type { Role } from './auth'
+
 // Matches backend DoctorResponse
 export interface Doctor {
   id: number
@@ -46,4 +48,5 @@ export interface DoctorUserOption {
   userId: number
   fullName: string
   email: string
+  role: Role
 }

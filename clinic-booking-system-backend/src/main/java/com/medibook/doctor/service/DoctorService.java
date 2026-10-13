@@ -28,6 +28,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -103,10 +104,25 @@ public class DoctorService {
                 .orElseThrow(() -> new ResourceNotFoundException("Clinic not found with id: " + clinicId));
         clinicAccessService.assertCanManageClinic(clinic, requesterId, requesterRole);
 
-        return userRepository.findByRoleAndEnabledTrueOrderByFullNameAsc(Role.DOCTOR).stream()
+        return Stream.concat(
+                        userRepository.findByRoleAndEnabledTrueOrderByFullNameAsc(Role.PATIENT).stream(),
+                        userRepository.findByRoleAndEnabledTrueOrderByFullNameAsc(Role.DOCTOR).stream())
                 .filter(user -> !doctorRepository.existsByUserId(user.getId()))
-                .map(user -> new DoctorUserOption(user.getId(), user.getFullName(), user.getEmail()))
+                .map(user -> new DoctorUserOption(user.getId(), user.getFullName(), user.getEmail(), user.getRole()))
                 .toList();
+    }
+
+    @Transactional
+    public DoctorResponse promotePatientToDoctor(DoctorCreateRequest request, Long requesterId, Role requesterRole) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
+        if (user.getRole() == Role.PATIENT) {
+            user.setRole(Role.DOCTOR);
+            userRepository.save(user);
+        } else if (user.getRole() != Role.DOCTOR) {
+            throw new UnauthorizedException("Only patient accounts can be promoted to doctor");
+        }
+        return createDoctorProfile(request, requesterId, requesterRole);
     }
 
        @Transactional(readOnly = true)
@@ -120,6 +136,7 @@ public class DoctorService {
             int size,
             String sortBy,
             String sortDir,
+            Long requesterId,
             Role requesterRole
     ) {
         Sort sort = sortDir.equalsIgnoreCase("desc")
@@ -128,12 +145,13 @@ public class DoctorService {
 
         PageRequest pageRequest = PageRequest.of(page, size, sort);
 
-        Specification<Doctor> spec =
-                DoctorSpecification.withFilters(specialization, clinicId, name, minExperience, maxFee, true);
+        Boolean activeFilter = RoleUtils.isAdmin(requesterRole) ? null : true;
+        Specification<Doctor> spec = DoctorSpecification.withFilters(
+                specialization, clinicId, name, minExperience, maxFee, activeFilter);
 
-       
-        boolean specificLookup = StringUtils.hasText(name) || clinicId != null;
-        if (!RoleUtils.isAdmin(requesterRole) && !specificLookup) {
+        if (requesterRole == Role.CLINIC_ADMIN || requesterRole == Role.CLINIC_OWNER) {
+            spec = spec.and(DoctorSpecification.clinicManagedBy(requesterId));
+        } else if (!RoleUtils.isAdmin(requesterRole)) {
             spec = spec.and(DoctorSpecification.clinicIsActive());
         }
 
@@ -150,16 +168,22 @@ public class DoctorService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<DoctorResponse> getDoctorsByClinic(Long clinicId, int page, int size) {
+    public PagedResponse<DoctorResponse> getDoctorsByClinic(Long clinicId, int page, int size,
+                                                              Long requesterId, Role requesterRole) {
         if (!clinicRepository.existsById(clinicId)) {
             throw new ResourceNotFoundException("Clinic not found with id: " + clinicId);
         }
 
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("id").ascending());
-        Page<Doctor> result = doctorRepository.findAll(
-                DoctorSpecification.withFilters(null, clinicId, null, null, null, true),
-                pageRequest
-        );
+        Boolean activeFilter = RoleUtils.isAdmin(requesterRole) ? null : true;
+        Specification<Doctor> spec = DoctorSpecification.withFilters(
+                null, clinicId, null, null, null, activeFilter);
+        if (requesterRole == Role.CLINIC_ADMIN || requesterRole == Role.CLINIC_OWNER) {
+            spec = spec.and(DoctorSpecification.clinicManagedBy(requesterId));
+        } else if (!RoleUtils.isAdmin(requesterRole)) {
+            spec = spec.and(DoctorSpecification.clinicIsActive());
+        }
+        Page<Doctor> result = doctorRepository.findAll(spec, pageRequest);
 
         return new PagedResponse<>(
                 result.getContent().stream().map(this::mapToResponse).toList(),
@@ -177,6 +201,15 @@ public class DoctorService {
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
                 clinicAccessService.assertCanManageDoctor(doctor, requesterId, requesterRole);
         doctor.setIsActive(false);
+        doctorRepository.save(doctor);
+    }
+
+    @Transactional
+    public void activateDoctor(Long id, Long requesterId, Role requesterRole) {
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
+        clinicAccessService.assertCanManageDoctor(doctor, requesterId, requesterRole);
+        doctor.setIsActive(true);
         doctorRepository.save(doctor);
     }
 

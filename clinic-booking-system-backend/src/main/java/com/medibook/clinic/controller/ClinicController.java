@@ -49,7 +49,8 @@ public class ClinicController {
 
         Role requesterRole = principal != null ? Role.valueOf(principal.getRole()) : null;
         PagedResponse<ClinicResponse> response =
-                clinicService.getAllClinics(city, search, status, page, size, requesterRole);
+                clinicService.getAllClinics(city, search, status, page, size,
+                        principal != null ? principal.getId() : null, requesterRole);
         return ResponseEntity.ok(ApiResponse.success("Clinics fetched successfully", response));
     }
 

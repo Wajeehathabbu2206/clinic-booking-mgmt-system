@@ -55,7 +55,7 @@ function initialClinicId(raw: string | null): string {
 export default function DoctorListPage() {
   const [searchParams] = useSearchParams()
   const { hasRole } = useAuth()
-  const canManageDoctors = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN)
+  const canManageDoctors = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN, ROLES.CLINIC_OWNER)
 
   const [nameInput, setNameInput] = useState('')
   const [specInput, setSpecInput] = useState('')

@@ -1,9 +1,11 @@
 package com.medibook.user.controller;
 
 import com.medibook.common.response.ApiResponse;
+import com.medibook.common.dto.PagedResponse;
 import com.medibook.user.dto.RoleUpdateRequest;
 import com.medibook.user.dto.UserProfileResponse;
 import com.medibook.user.dto.UserProfileUpdateRequest;
+import com.medibook.user.dto.UserPromotionCandidate;
 import com.medibook.user.service.UserService;
 import com.medibook.auth.security.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -19,6 +21,22 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/promotion-candidates")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<PagedResponse<UserPromotionCandidate>>> getPromotionCandidates(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(ApiResponse.success("Promotion candidates fetched successfully",
+                userService.getClinicOwnerPromotionCandidates(page, size)));
+    }
+
+    @PostMapping("/{id}/promote-clinic-owner")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> promoteToClinicOwner(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success("User promoted to clinic owner successfully",
+                userService.promoteToClinicOwner(id)));
+    }
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getMyProfile(

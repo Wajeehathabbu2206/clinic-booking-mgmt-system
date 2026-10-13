@@ -26,6 +26,7 @@ export default function DoctorCard({ doctor, showClinic = false }: DoctorCardPro
             <h3 className="truncate text-base font-semibold text-gray-900">{doctor.fullName}</h3>
             <div className="mt-1">
               <Badge variant="blue">{doctor.specialization}</Badge>
+              {!doctor.isActive && <Badge variant="red" className="ml-2">Inactive</Badge>}
             </div>
           </div>
         </div>

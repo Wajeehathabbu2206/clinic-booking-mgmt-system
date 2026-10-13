@@ -11,11 +11,11 @@ public interface ClinicService {
 
     /**
      * Guests and non-admins always get ACTIVE clinics only.
-     * SUPER_ADMIN / CLINIC_ADMIN get every clinic, optionally narrowed by status.
-     * requesterRole is null for guests.
+     * SUPER_ADMIN sees every clinic; clinic managers see clinics they created or manage.
+     * Guests and other roles see active clinics only. requesterRole is null for guests.
      */
     PagedResponse<ClinicResponse> getAllClinics(String city, String search, ClinicStatus status,
-                                                int page, int size, Role requesterRole);
+                                                int page, int size, Long requesterId, Role requesterRole);
 
     ClinicResponse updateClinic(Long clinicId, ClinicUpdateRequest request, Long requesterId, Role requesterRole);
     void deactivateClinic(Long clinicId);

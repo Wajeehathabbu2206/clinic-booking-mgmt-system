@@ -35,6 +35,16 @@ public class DoctorController {
                                 doctorService.createDoctorProfile(request, principal.getId(), Role.valueOf(principal.getRole())));
     }
 
+    @PostMapping("/promote")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
+    public ApiResponse<DoctorResponse> promotePatientToDoctor(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @Valid @RequestBody DoctorCreateRequest request) {
+        return ApiResponse.success("Patient promoted to doctor successfully",
+                doctorService.promotePatientToDoctor(
+                        request, principal.getId(), Role.valueOf(principal.getRole())));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN', 'DOCTOR')")
     public ApiResponse<DoctorResponse> updateDoctor(
@@ -76,17 +86,20 @@ public class DoctorController {
         Role requesterRole = principal != null ? Role.valueOf(principal.getRole()) : null;
         return ApiResponse.success("Doctors fetched successfully",
                 doctorService.searchDoctors(specialization, clinicId, name, minExperience, maxFee,
-                        page, size, sortBy, sortDir, requesterRole));
+                        page, size, sortBy, sortDir, principal != null ? principal.getId() : null, requesterRole));
     }
 
     @GetMapping("/clinic/{clinicId}")
     public ApiResponse<PagedResponse<DoctorResponse>> getDoctorsByClinic(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable Long clinicId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return ApiResponse.success("Doctors fetched successfully",
-                doctorService.getDoctorsByClinic(clinicId, page, size));
+                doctorService.getDoctorsByClinic(clinicId, page, size,
+                        principal != null ? principal.getId() : null,
+                        principal != null ? Role.valueOf(principal.getRole()) : null));
     }
 
     @DeleteMapping("/{id}")
@@ -94,5 +107,14 @@ public class DoctorController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
         public void deactivateDoctor(@AuthenticationPrincipal CustomUserDetails principal, @PathVariable Long id) {
                 doctorService.deactivateDoctor(id, principal.getId(), Role.valueOf(principal.getRole()));
+    }
+
+    @PutMapping("/{id}/activate")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CLINIC_ADMIN')")
+    public ApiResponse<Void> activateDoctor(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @PathVariable Long id) {
+        doctorService.activateDoctor(id, principal.getId(), Role.valueOf(principal.getRole()));
+        return ApiResponse.success("Doctor profile activated successfully", null);
     }
 }

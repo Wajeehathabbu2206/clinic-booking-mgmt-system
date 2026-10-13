@@ -86,7 +86,7 @@ export default function DoctorFormPage() {
     }
 
     try {
-      const doctor = await doctorApi.create(payload)
+      const doctor = await doctorApi.promotePatient(payload)
       navigate(PATHS.doctorDetail(doctor.id), { replace: true })
     } catch (err) {
       setError(getErrorMessage(err))
@@ -102,7 +102,9 @@ export default function DoctorFormPage() {
           &larr; Find doctors
         </Link>
         <h1 className="mt-3 text-2xl font-semibold text-gray-900">Add doctor profile</h1>
-        <p className="mt-1 text-sm text-gray-600">Link an existing doctor account to a clinic.</p>
+        <p className="mt-1 text-sm text-gray-600">
+          Choose a registered patient to promote to doctor and assign to a clinic you manage.
+        </p>
       </div>
 
       {clinicLoadError && (
@@ -121,7 +123,7 @@ export default function DoctorFormPage() {
               onChange={(event) => setClinicId(event.target.value)} />
             <Select label="Doctor account" required
               placeholder={!clinicId ? 'Select a clinic first' : doctorsLoading ? 'Loading doctor accounts…' : 'Select a doctor account'}
-              options={doctorOptions.map((user) => ({ value: String(user.userId), label: `${user.fullName} — ${user.email}` }))}
+              options={doctorOptions.map((user) => ({ value: String(user.userId), label: `${user.fullName} — ${user.email} (${user.role === 'PATIENT' ? 'patient to promote' : 'doctor account'})` }))}
               value={doctorUserId} disabled={!clinicId || doctorsLoading || doctorOptions.length === 0}
               onChange={(event) => setDoctorUserId(event.target.value)} />
             <Input label="Specialization" required maxLength={100} value={specialization}

@@ -37,3 +37,10 @@ export interface UserProfileUpdateRequest {
 export interface RoleUpdateRequest {
   role: Role
 }
+
+export interface UserPromotionCandidate {
+  id: number
+  fullName: string
+  email: string
+  createdAt: string
+}

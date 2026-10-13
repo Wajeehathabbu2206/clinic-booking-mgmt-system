@@ -1,4 +1,6 @@
 package com.medibook.doctor.dto;
 
-public record DoctorUserOption(Long userId, String fullName, String email) {
+import com.medibook.common.util.Role;
+
+public record DoctorUserOption(Long userId, String fullName, String email, Role role) {
 }

@@ -29,7 +29,7 @@ function ClinicDetail({ idParam }: { idParam: string | undefined }) {
   const clinicId = Number(idParam)
   const validId = Number.isInteger(clinicId) && clinicId > 0
   const { hasRole } = useAuth()
-  const isAdmin = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN)
+  const isAdmin = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN, ROLES.CLINIC_OWNER)
   const isSuperAdmin = hasRole(ROLES.SUPER_ADMIN)
 
   const [clinic, setClinic] = useState<Clinic | null>(null)

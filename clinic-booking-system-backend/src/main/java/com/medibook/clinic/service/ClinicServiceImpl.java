@@ -66,15 +66,15 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     public PagedResponse<ClinicResponse> getAllClinics(String city, String search, ClinicStatus status,
-                                                       int page, int size, Role requesterRole) {
+                                                       int page, int size, Long requesterId, Role requesterRole) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
 
-        // Non-admins (including guests) can only ever see ACTIVE clinics.
-        // Admins see everything, optionally narrowed by the requested status.
+        // Guests and non-managers can only see ACTIVE clinics. Clinic managers see
+        // only clinics they created or actively manage; super-admins see all clinics.
         ClinicStatus effectiveStatus = RoleUtils.isAdmin(requesterRole) ? status : ClinicStatus.ACTIVE;
 
         Page<Clinic> clinicPage = clinicRepository.findAll(
-                ClinicSpecification.withFilters(search, city, effectiveStatus), pageable);
+                ClinicSpecification.withFilters(search, city, effectiveStatus, requesterId, requesterRole), pageable);
 
         return PagedResponse.from(clinicPage.map(this::toResponse));
     }

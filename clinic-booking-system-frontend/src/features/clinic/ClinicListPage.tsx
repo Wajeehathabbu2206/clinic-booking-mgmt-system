@@ -20,7 +20,7 @@ const STATUS_OPTIONS = [
 
 export default function ClinicListPage() {
   const { hasRole } = useAuth()
-  const isAdmin = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN)
+  const isAdmin = hasRole(ROLES.SUPER_ADMIN, ROLES.CLINIC_ADMIN, ROLES.CLINIC_OWNER)
 
   const [searchInput, setSearchInput] = useState('')
   const [cityInput, setCityInput] = useState('')

@@ -15,6 +15,11 @@ export const doctorApi = {
     return res.data.data
   },
 
+  async promotePatient(payload: DoctorCreateRequest): Promise<Doctor> {
+    const res = await axiosInstance.post<ApiResponse<Doctor>>('/doctors/promote', payload)
+    return res.data.data
+  },
+
   async search(params: DoctorSearchParams = {}): Promise<PagedResponse<Doctor>> {
     const res = await axiosInstance.get<ApiResponse<PagedResponse<Doctor>>>('/doctors/search', {
       params,
@@ -29,6 +34,10 @@ export const doctorApi = {
 
   async deactivate(id: number): Promise<void> {
     await axiosInstance.delete(`/doctors/${id}`)
+  },
+
+  async activate(id: number): Promise<void> {
+    await axiosInstance.put(`/doctors/${id}/activate`)
   },
 
   async getByClinic(

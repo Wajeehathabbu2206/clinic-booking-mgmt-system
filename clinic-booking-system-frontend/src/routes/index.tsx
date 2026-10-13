@@ -7,6 +7,7 @@ import ClinicDetailPage from '@/features/clinic/ClinicDetailPage'
 import ClinicFormPage from '@/features/clinic/ClinicFormPage'
 import ClinicListPage from '@/features/clinic/ClinicListPage'
 import ProfilePage from '@/features/user/ProfilePage'
+import ClinicOwnerPromotionPage from '@/features/user/ClinicOwnerPromotionPage'
 import DoctorListPage from '@/features/doctor/DoctorListPage'
 import DoctorDetailPage from '@/features/doctor/DoctorDetailPage'
 import DoctorFormPage from '@/features/doctor/DoctorFormPage'
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
             element: <PlaceholderPage title="Dashboard" phase="F10 – Analytics Dashboard" />,
           },
           { path: PATHS.profile, element: <ProfilePage /> },
+          {
+            element: <ProtectedRoute allowedRoles={ROUTE_ROLES.superAdmin} />,
+            children: [{ path: PATHS.adminUsers, element: <ClinicOwnerPromotionPage /> }],
+          },
           {
             path: PATHS.appointments,
             element: <PlaceholderPage title="Appointments" phase="F5 – Appointment Booking" />,
