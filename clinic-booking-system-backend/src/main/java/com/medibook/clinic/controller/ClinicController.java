@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.medibook.clinic.entity.ClinicStatus;
 
 import java.util.List;
 
@@ -39,11 +40,16 @@ public class ClinicController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<ClinicResponse>>> getAllClinics(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) ClinicStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PagedResponse<ClinicResponse> response = clinicService.getAllClinics(city, search, page, size);
+
+        Role requesterRole = principal != null ? Role.valueOf(principal.getRole()) : null;
+        PagedResponse<ClinicResponse> response =
+                clinicService.getAllClinics(city, search, status, page, size, requesterRole);
         return ResponseEntity.ok(ApiResponse.success("Clinics fetched successfully", response));
     }
 
@@ -63,6 +69,13 @@ public class ClinicController {
     public ResponseEntity<ApiResponse<Void>> deactivateClinic(@PathVariable Long id) {
         clinicService.deactivateClinic(id);
         return ResponseEntity.ok(ApiResponse.success("Clinic deactivated successfully", null));
+    }
+
+    @PutMapping("/{id}/activate")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> activateClinic(@PathVariable Long id) {
+        clinicService.activateClinic(id);
+        return ResponseEntity.ok(ApiResponse.success("Clinic activated successfully", null));
     }
 
     // ---- Staff management ----

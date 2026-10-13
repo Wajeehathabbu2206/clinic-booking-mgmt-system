@@ -35,6 +35,11 @@ export const clinicApi = {
     await axiosInstance.delete(`/clinics/${id}`)
   },
 
+  // SUPER_ADMIN only
+  async activate(id: number): Promise<void> {
+    await axiosInstance.put(`/clinics/${id}/activate`)
+  },
+
   // ---- Staff ----
 
   async getStaff(clinicId: number): Promise<ClinicStaff[]> {

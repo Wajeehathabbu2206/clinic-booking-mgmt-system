@@ -3,27 +3,31 @@ import { AuthLayout, DashboardLayout, PublicLayout } from '@/components/layout'
 import PlaceholderPage from '@/components/PlaceholderPage'
 import LoginPage from '@/features/auth/LoginPage'
 import RegisterPage from '@/features/auth/RegisterPage'
+import ClinicDetailPage from '@/features/clinic/ClinicDetailPage'
+import ClinicFormPage from '@/features/clinic/ClinicFormPage'
+import ClinicListPage from '@/features/clinic/ClinicListPage'
+import ProfilePage from '@/features/user/ProfilePage'
+import DoctorListPage from '@/features/doctor/DoctorListPage'
+import DoctorDetailPage from '@/features/doctor/DoctorDetailPage'
 import ForbiddenPage from '@/pages/ForbiddenPage'
 import HomePage from '@/pages/HomePage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import { ROUTE_ROLES } from './navConfig'
 import { PATHS } from './paths'
 import ProtectedRoute from './ProtectedRoute'
-import ProfilePage from '@/features/user/ProfilePage'
 
 export const router = createBrowserRouter([
-  // Public pages
+  // Public pages (guests included)
   {
     element: <PublicLayout />,
     children: [
       { path: PATHS.home, element: <HomePage /> },
-      {
-        path: PATHS.doctors,
-        element: <PlaceholderPage title="Find Doctors" phase="F3 – Doctor Search" />,
-      },
+      { path: PATHS.clinics, element: <ClinicListPage /> },
+      { path: PATHS.clinicDetail(), element: <ClinicDetailPage /> },
+      { path: PATHS.doctors, element: <DoctorListPage /> },
       {
         path: PATHS.doctorDetail(),
-        element: <PlaceholderPage title="Doctor Details" phase="F3 – Doctor Search" />,
+        element: <DoctorDetailPage />,
       },
       { path: PATHS.forbidden, element: <ForbiddenPage /> },
     ],
@@ -51,10 +55,6 @@ export const router = createBrowserRouter([
           },
           { path: PATHS.profile, element: <ProfilePage /> },
           {
-            path: PATHS.clinics,
-            element: <PlaceholderPage title="Clinics" phase="F2 – Clinic & User Profiles" />,
-          },
-          {
             path: PATHS.appointments,
             element: <PlaceholderPage title="Appointments" phase="F5 – Appointment Booking" />,
           },
@@ -64,6 +64,19 @@ export const router = createBrowserRouter([
           },
 
           // Role-restricted pages
+          {
+            element: <ProtectedRoute allowedRoles={ROUTE_ROLES.clinicManage} />,
+            children: [
+              {
+                path: PATHS.clinicNew,
+                element: <ClinicFormPage />,
+              },
+              {
+                path: PATHS.clinicEdit(),
+                element: <ClinicFormPage />,
+              },
+            ],
+          },
           {
             element: <ProtectedRoute allowedRoles={ROUTE_ROLES.calendar} />,
             children: [

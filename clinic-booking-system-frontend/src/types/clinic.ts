@@ -51,6 +51,7 @@ export interface ClinicUpdateRequest {
 export interface ClinicListParams {
   city?: string
   search?: string
+  status?: ClinicStatus
   page?: number // 0-based
   size?: number
 }

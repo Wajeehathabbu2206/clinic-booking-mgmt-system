@@ -49,8 +49,9 @@ public class DoctorController {
         return ApiResponse.success("Doctor fetched successfully", doctorService.getDoctorById(id));
     }
 
-    @GetMapping("/search")
+        @GetMapping("/search")
     public ApiResponse<PagedResponse<DoctorResponse>> searchDoctors(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam(required = false) String specialization,
             @RequestParam(required = false) Long clinicId,
             @RequestParam(required = false) String name,
@@ -61,9 +62,10 @@ public class DoctorController {
             @RequestParam(defaultValue = "experienceYears") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir
     ) {
+        Role requesterRole = principal != null ? Role.valueOf(principal.getRole()) : null;
         return ApiResponse.success("Doctors fetched successfully",
                 doctorService.searchDoctors(specialization, clinicId, name, minExperience, maxFee,
-                        page, size, sortBy, sortDir));
+                        page, size, sortBy, sortDir, requesterRole));
     }
 
     @GetMapping("/clinic/{clinicId}")

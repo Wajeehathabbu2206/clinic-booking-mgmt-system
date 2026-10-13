@@ -22,7 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.medibook.common.util.RoleUtils;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 
 @Service
@@ -93,7 +95,7 @@ public class DoctorService {
         return mapToResponse(doctor);
     }
 
-    @Transactional(readOnly = true)
+       @Transactional(readOnly = true)
     public PagedResponse<DoctorResponse> searchDoctors(
             String specialization,
             Long clinicId,
@@ -103,7 +105,8 @@ public class DoctorService {
             int page,
             int size,
             String sortBy,
-            String sortDir
+            String sortDir,
+            Role requesterRole
     ) {
         Sort sort = sortDir.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
@@ -111,10 +114,16 @@ public class DoctorService {
 
         PageRequest pageRequest = PageRequest.of(page, size, sort);
 
-        Page<Doctor> result = doctorRepository.findAll(
-                DoctorSpecification.withFilters(specialization, clinicId, name, minExperience, maxFee, true),
-                pageRequest
-        );
+        Specification<Doctor> spec =
+                DoctorSpecification.withFilters(specialization, clinicId, name, minExperience, maxFee, true);
+
+       
+        boolean specificLookup = StringUtils.hasText(name) || clinicId != null;
+        if (!RoleUtils.isAdmin(requesterRole) && !specificLookup) {
+            spec = spec.and(DoctorSpecification.clinicIsActive());
+        }
+
+        Page<Doctor> result = doctorRepository.findAll(spec, pageRequest);
 
         return new PagedResponse<>(
                 result.getContent().stream().map(this::mapToResponse).toList(),

@@ -21,3 +21,18 @@ export function formatDate(value?: string | null): string {
   if (Number.isNaN(date.getTime())) return '—'
   return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 }
+
+/** "GENERAL_PHYSICIAN" -> "General Physician" */
+export function formatEnum(value?: string | null): string {
+  if (!value) return '—'
+  return value
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+export function formatCurrency(value?: number | null): string {
+  if (value === undefined || value === null) return '—'
+  return `₹${Number(value).toLocaleString('en-IN')}`
+}

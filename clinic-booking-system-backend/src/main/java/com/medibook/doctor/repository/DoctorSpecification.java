@@ -1,5 +1,6 @@
 package com.medibook.doctor.repository;
 
+import com.medibook.clinic.entity.ClinicStatus;
 import com.medibook.doctor.entity.Doctor;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
@@ -52,5 +53,10 @@ public class DoctorSpecification {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    /** Only doctors whose clinic is ACTIVE. */
+    public static Specification<Doctor> clinicIsActive() {
+        return (root, query, cb) -> cb.equal(root.get("clinic").get("status"), ClinicStatus.ACTIVE);
     }
 }

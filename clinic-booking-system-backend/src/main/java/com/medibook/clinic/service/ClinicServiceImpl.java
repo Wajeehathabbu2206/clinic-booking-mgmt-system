@@ -18,7 +18,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
+import com.medibook.clinic.repository.ClinicSpecification;
+import com.medibook.common.util.RoleUtils;
 import java.util.List;
 
 @Service
@@ -64,17 +65,16 @@ public class ClinicServiceImpl implements ClinicService {
     }
 
     @Override
-    public PagedResponse<ClinicResponse> getAllClinics(String city, String search, int page, int size) {
+    public PagedResponse<ClinicResponse> getAllClinics(String city, String search, ClinicStatus status,
+                                                       int page, int size, Role requesterRole) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
 
-        Page<Clinic> clinicPage;
-        if (StringUtils.hasText(search)) {
-            clinicPage = clinicRepository.findByNameContainingIgnoreCaseAndStatus(search, ClinicStatus.ACTIVE, pageable);
-        } else if (StringUtils.hasText(city)) {
-            clinicPage = clinicRepository.findByCityIgnoreCaseAndStatus(city, ClinicStatus.ACTIVE, pageable);
-        } else {
-            clinicPage = clinicRepository.findByStatus(ClinicStatus.ACTIVE, pageable);
-        }
+        // Non-admins (including guests) can only ever see ACTIVE clinics.
+        // Admins see everything, optionally narrowed by the requested status.
+        ClinicStatus effectiveStatus = RoleUtils.isAdmin(requesterRole) ? status : ClinicStatus.ACTIVE;
+
+        Page<Clinic> clinicPage = clinicRepository.findAll(
+                ClinicSpecification.withFilters(search, city, effectiveStatus), pageable);
 
         return PagedResponse.from(clinicPage.map(this::toResponse));
     }
@@ -103,6 +103,14 @@ public class ClinicServiceImpl implements ClinicService {
     public void deactivateClinic(Long clinicId) {
         Clinic clinic = findClinic(clinicId);
         clinic.setStatus(ClinicStatus.INACTIVE);
+        clinicRepository.save(clinic);
+    }
+
+    @Override
+    @Transactional
+    public void activateClinic(Long clinicId) {
+        Clinic clinic = findClinic(clinicId);
+        clinic.setStatus(ClinicStatus.ACTIVE);
         clinicRepository.save(clinic);
     }
 

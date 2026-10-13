@@ -5,10 +5,11 @@ import com.medibook.clinic.entity.ClinicStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
-public interface ClinicRepository extends JpaRepository<Clinic, Long> {
+public interface ClinicRepository extends JpaRepository<Clinic, Long>, JpaSpecificationExecutor<Clinic> {
     boolean existsByRegistrationNumber(String registrationNumber);
     Optional<Clinic> findByIdAndStatus(Long id, ClinicStatus status);
     Page<Clinic> findByCityIgnoreCaseAndStatus(String city, ClinicStatus status, Pageable pageable);
